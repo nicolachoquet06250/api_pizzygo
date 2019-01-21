@@ -12,7 +12,7 @@ class HttpService extends Service {
 		$this->get = $_GET;
 		$this->post = $_POST;
 		$this->files = $_FILES;
-		$this->response_header = $http_response_header;
+		$this->response_header = isset($http_response_header) ? $http_response_header : null;
 		$this->session = isset($_SESSION) ? $_SESSION : null;
 	}
 

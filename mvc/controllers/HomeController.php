@@ -6,10 +6,12 @@ class HomeController extends Controller {
 	 * @throws Exception
 	 */
 	public function index() {
+		/** @var HttpService $http_service */
+		$http_service = $this->get_service('http');
 		return [
 			'controller' => 'home',
-			'get' => $this->get_service('http')->get(),
-			'session' => $this->get_service('http')->session()
+			'get' => $http_service->get(),
+			'session' => $http_service->session()
 		];
 	}
 }

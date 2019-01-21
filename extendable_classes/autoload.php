@@ -1,8 +1,8 @@
 <?php
 
-require_once __DIR__.'/Base.php';
-require_once __DIR__.'/Service.php';
-require_once __DIR__.'/Conf.php';
-require_once __DIR__.'/Setup.php';
-require_once __DIR__.'/Controller.php';
-require_once __DIR__.'/Model.php';
+$dir = opendir(__DIR__);
+while (($elem = readdir($dir)) !== false) {
+	if($elem !== '.' && $elem !== '..' && $elem !== 'autoload.php') {
+		require_once __DIR__.'/'.$elem;
+	}
+}
