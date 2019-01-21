@@ -18,21 +18,21 @@ class HttpService extends Service {
 
 	public function get($key = null) {
 		if(is_null($key)) {
-			return $_GET;
+			return $this->get;
 		}
 		return isset($this->get[$key]) ? $this->get[$key] : null;
 	}
 
 	public function post($key) {
 		if(is_null($key)) {
-			return $_POST;
+			return $this->post;
 		}
 		return isset($this->post[$key]) ? $this->post[$key] : null;
 	}
 
 	public function files($key) {
 		if(is_null($key)) {
-			return $_FILES;
+			return $this->files;
 		}
 		return isset($this->files[$key]) ? $this->files[$key] : null;
 	}
@@ -42,8 +42,11 @@ class HttpService extends Service {
 		return isset($this->response_header[$key]) ? $this->response_header[$key] : null;
 	}
 
-	public function session($key, $value = null) {
+	public function session($key = null, $value = null) {
 		if(!is_null($value)) $this->response_header[$key] = $value;
+		if(is_null($key)) {
+			return $this->session;
+		}
 		return isset($this->response_header[$key]) ? $this->response_header[$key] : null;
 	}
 }
