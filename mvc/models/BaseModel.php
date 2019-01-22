@@ -2,14 +2,16 @@
 
 class BaseModel extends Model {
 	private $mysql;
+
+	/**
+	 * BaseModel constructor.
+	 *
+	 * @throws Exception
+	 */
 	public function __construct() {
-		$mysql_conf = new Conf('mysql');
-		$this->mysql = new mysqli(
-			$mysql_conf->get('host'),
-			$mysql_conf->get('user'),
-			$mysql_conf->get('password'),
-			$mysql_conf->get('database')
-		);
+		/** @var MysqlService $mysql_service */
+		$mysql_service = $this->get_service('mysql');
+		$this->mysql = $mysql_service->get_connector();
 	}
 
 	protected function get_mysql() {

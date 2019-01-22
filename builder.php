@@ -2,6 +2,11 @@
 
 require_once __DIR__.'/autoload.php';
 
-Command::create(
-	Command::clean_args($argv)
-);
+try {
+	Command::create(
+		Command::clean_args($argv)
+	);
+}
+catch (Exception $e) {
+	exit($e->getMessage());
+}

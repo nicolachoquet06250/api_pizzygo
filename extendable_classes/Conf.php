@@ -7,11 +7,6 @@ class Conf {
 	}
 
 	public function get($key) {
-		if(isset($this->conf[$key])) {
-			return $this->conf[$key];
-		}
-		else {
-			return null;
-		}
+		return isset($this->conf[$key]) ? $this->conf[$key] : null;
 	}
 }

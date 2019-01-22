@@ -1,11 +1,16 @@
 <?php
 
-class Repository {
+class Repository extends Base {
 	private $entity_class;
 	private $mysql;
 	private $table_name;
 	private $result = [];
 
+	/**
+	 * Repository constructor.
+	 *
+	 * @throws Exception
+	 */
 	public function __construct() {
 		$this->entity_class = get_class($this);
 		$this->entity_class = explode("\\", $this->entity_class)[count(explode("\\", $this->entity_class))-1];
@@ -16,13 +21,9 @@ class Repository {
 			], 'Entity', $this->entity_class);
 		$this->table_name = strtolower(str_replace('Entity', '', $this->entity_class));
 		require_once __DIR__.'/../entities/'.$this->entity_class.'.php';
-		$mysql_conf = new Conf('mysql');
-		$this->mysql = new mysqli(
-			$mysql_conf->get('host'),
-			$mysql_conf->get('user'),
-			$mysql_conf->get('password'),
-			$mysql_conf->get('database')
-		);
+		/** @var MysqlService $mysql_service */
+		$mysql_service = $this->get_service('mysql');
+		$this->mysql = $mysql_service->get_connector();
 	}
 
 	/**
@@ -34,6 +35,7 @@ class Repository {
 
 	/**
 	 * @return array
+	 * @throws Exception
 	 */
 	public function getAll() {
 		$query = $this->get_mysql()->query('SELECT * FROM '.$this->table_name);
@@ -53,6 +55,7 @@ class Repository {
 
 	/**
 	 * @return array
+	 * @throws Exception
 	 */
 	public function getAllDesc() {
 		$query = $this->get_mysql()->query('SELECT * FROM '.$this->table_name.' ORDER BY `id` DESC');
@@ -72,6 +75,7 @@ class Repository {
 
 	/**
 	 * @return array
+	 * @throws Exception
 	 */
 	public function getAllAsc() {
 		$query = $this->get_mysql()->query('SELECT * FROM '.$this->table_name.' ORDER BY `id` ASC');
@@ -93,6 +97,7 @@ class Repository {
 	 * @param $field
 	 * @param $value
 	 * @return array
+	 * @throws Exception
 	 */
 	public function getBy($field, $value) {
 		$query = $this->get_mysql()
@@ -115,6 +120,7 @@ class Repository {
 	/**
 	 * @param $id
 	 * @return array
+	 * @throws Exception
 	 */
 	public function getById($id) {
 		return $this->getBy('id', $id);
@@ -131,10 +137,11 @@ class Repository {
 
 	/** @param Entity|callable $entity
 	 * @return bool|Entity
+	 * @throws Exception
 	 */
 	public function create($entity) {
 		if(get_class($entity) === 'Closure') {
-			$entity = $entity();
+			$entity = $entity(new Base());
 		}
 		$entity->set_mysql($this->mysql);
 		return $entity->save(false);
@@ -143,6 +150,7 @@ class Repository {
 	/**
 	 * @param $id
 	 * @return bool
+	 * @throws Exception
 	 */
 	public function deleteFromId($id) {
 		$this->getAll();

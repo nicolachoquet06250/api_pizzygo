@@ -1,8 +1,11 @@
 <?php
 $cnf = file_get_contents(__DIR__.'/mysql.txt');
+$cnf = explode(";", $cnf);
 $_cnf = [];
-$cnf = explode("\n", $cnf);
 foreach ($cnf as $item) {
-	$_cnf[explode('=', $item)[0]] = explode('=', $item)[1];
+	if($item !== '') {
+		$item = str_replace(["\n", "\r"], '', $item);
+		$_cnf[explode('=', $item)[0]] = explode('=', $item)[1];
+	}
 }
 return $_cnf;

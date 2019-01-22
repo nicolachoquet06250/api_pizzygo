@@ -1,5 +1,3 @@
 <?php
 
-class UserDao extends Repository {
-
-}
+class UserDao extends Repository {}
