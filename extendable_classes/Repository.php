@@ -14,11 +14,7 @@ class Repository {
 				'Repository',
 				'Dao'
 			], 'Entity', $this->entity_class);
-		$this->table_name = strtolower(str_replace(
-			[
-				'Repository',
-				'Dao'
-			], '', $this->entity_class));
+		$this->table_name = strtolower(str_replace('Entity', '', $this->entity_class));
 		require_once __DIR__.'/../entities/'.$this->entity_class.'.php';
 		$mysql_conf = new Conf('mysql');
 		$this->mysql = new mysqli(
@@ -131,6 +127,17 @@ class Repository {
 				$entity->save();
 			}
 		}
+	}
+
+	/** @param Entity|callable $entity
+	 * @return bool|Entity
+	 */
+	public function create($entity) {
+		if(get_class($entity) === 'Closure') {
+			$entity = $entity();
+		}
+		$entity->set_mysql($this->mysql);
+		return $entity->save(false);
 	}
 
 	/**

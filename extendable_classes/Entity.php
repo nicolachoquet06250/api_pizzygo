@@ -2,6 +2,7 @@
 
 class Entity {
 	private $fields = [];
+	protected $primary_key;
 	private $mysql;
 	protected $updated = false;
 	protected $table_name;
@@ -13,8 +14,7 @@ class Entity {
 	 * @throws ReflectionException
 	 */
 	public function __construct($mysql = null) {
-		$ref = new ReflectionClass(get_class($this));
-		$this->fields = $ref->getProperties();
+		$this->init_fields();
 		$this->mysql = $mysql;
 		$this->table_name = strtolower(str_replace('Entity', '', get_class($this)));
 	}
@@ -23,39 +23,106 @@ class Entity {
 		return $this->mysql;
 	}
 
+	public function set_mysql(mysqli $mysqli) {
+		$this->mysql = $mysqli;
+	}
+
 	public function isUpdated() {
 		return $this->updated;
 	}
 
-	public function get_fields($except = []) {
-		$fields = [
-			'id',
-			'name',
-			'surname',
-			'address',
-			'email',
-			'phone',
-		];
-		$_fields = [];
-		foreach ($fields as $field) {
-			if(!in_array($field, $except)) {
-				$_fields[] = $field;
+	/**
+	 * @throws ReflectionException
+	 */
+	private function init_fields() {
+		$ref = new ReflectionClass(get_class($this));
+		$props = $ref->getProperties();
+		foreach ($props as $prop) {
+			if($prop->class !== Entity::class) {
+				$doc_comment = $prop->getDocComment();
+				$doc_comment = str_replace(['/**'."\n", '*/', "\t", ' * '], '', $doc_comment);
+				$doc_comment = substr($doc_comment, 0, strlen($doc_comment)-2);
+				$doc_comment = explode("\n", $doc_comment);
+				$this->fields[$prop->getName()] = [];
+				$this->fields[$prop->getName()]['value'] = null;
+				foreach ($doc_comment as $doc_line) {
+					if($doc_line === '@primary') {
+						$this->primary_key = $prop->getName();
+						$this->fields[$prop->getName()]['key'] = 'primary';
+					}
+					if(strstr($doc_line, '@var ') !== false) {
+						$this->fields[$prop->getName()]['type'] = explode(' ', $doc_line)[1];
+					}
+					if($doc_line === '@text') {
+						$this->fields[$prop->getName()]['sql']['type'] = 'TEXT';
+					}
+					if(strstr($doc_line, '@size')) {
+						$this->fields[$prop->getName()]['sql']['type'] = 'VARCHAR';
+						$this->fields[$prop->getName()]['sql']['size'] = (int)str_replace(['@size(', ')'], '', $doc_line);
+					}
+				}
 			}
 		}
-		return $_fields;
 	}
 
-	public function save() {
-		$request = 'UPDATE '.$this->table_name.' SET ';
-		foreach ($this->get_fields(['id']) as $i => $field) {
-			if($i > 0) {
-				$request .= ', ';
+	public function get_primary_key() {
+		return $this->primary_key;
+	}
+
+	/**
+	 * @param array $except
+	 * @return array
+	 */
+	public function get_fields($except = []) {
+		$fields = [];
+		foreach ($this->fields as $field => $details) {
+			if(!in_array($field, $except)) {
+				$fields[$field] = $details;
 			}
-			$value = $this->get($field);
-			$request .= '`'.$field.'`='.(gettype($value) === 'string' ? '"'.$value.'"' : $value);
 		}
-		$request .= 'WHERE `id`='.$this->get('id');
-		$this->get_mysql()->query('UPDATE '.$this->table_name.' SET ``="" WHERE `id`='.$this->get('id'));
+		return $fields;
+	}
+
+	public function save($exists = true) {
+		if($exists) {
+			$request = 'UPDATE '.$this->table_name.' SET ';
+			$i = 0;
+			foreach ($this->get_fields(['id']) as $field => $details) {
+				if ($i > 0) {
+					$request .= ', ';
+				}
+				$value   = $this->get($field);
+				$request .= '`'.$field.'`='.(gettype($value) === 'string' ? '"'.$value.'"' : $value);
+				$i++;
+			}
+			$request .= 'WHERE `id`='.$this->get('id');
+		}
+		else {
+			$request = 'INSERT INTO '.$this->table_name.' SET ';
+			$i = 0;
+			foreach ($this->get_fields(['id']) as $field => $details) {
+				if ($i > 0) {
+					$request .= ', ';
+				}
+				$value   = $this->get($field);
+				if($details['type'] === 'string') {
+					$value = '"'.$value.'"';
+				}
+				elseif ($details['type'] === 'bool') {
+					$value = (int)$value;
+				}
+				$request .= '`'.$field.'`='.$value;
+				$i++;
+			}
+		}
+		$result = $this->get_mysql()->query($request);
+		if(!$exists) {
+			$req = $this->get_mysql()->query('SELECT id FROM '.$this->table_name.' ORDER BY id ASC LIMIT 1');
+			while (list($id) = $req->fetch_array()) {
+				$this->set('id', $id);
+			}
+		}
+		return $result ? $this : false;
 	}
 
 	public function delete() {
@@ -72,11 +139,14 @@ class Entity {
 
 	/**
 	 * @param $prop
-	 * @param $key
+	 * @param $value
+	 * @param bool $update
 	 */
-	public function set($prop, $key) {
+	public function set($prop, $value, $update = false) {
 		if(isset($this->$prop) && $this->$prop !== null) {
-			$this->$prop = $key;
+			$this->$prop = $value;
+			$this->fields[$prop]['value'] = $value;
+			if($update) $this->updated = $update;
 		}
 	}
 }
