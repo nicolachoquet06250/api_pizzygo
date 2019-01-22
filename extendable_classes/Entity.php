@@ -19,6 +19,41 @@ class Entity {
 		$this->table_name = strtolower(str_replace('Entity', '', get_class($this)));
 	}
 
+	/**
+	 * @return bool
+	 */
+	public function create_db() {
+		$fields = $this->get_fields();
+		$request = 'CREATE TABLE IF NOT EXISTS `'.$this->table_name.'` (';
+		$max = count($fields);
+		$i = 0;
+		foreach ($fields as $field => $details) {
+			$size = 0;
+			if($details['type'] === 'int') {
+				$size = 11;
+			}
+			elseif (isset($details['sql']['type'])) {
+				if(isset($details['sql']['size'])) {
+					$size = $details['sql']['size'];
+				}
+			}
+			else {
+				$size = null;
+			}
+			$request .= $field.' '.strtoupper((isset($details['sql']['type']) ? $details['sql']['type'] : $details['type'])).($size ? '('.$size.')' : '').' '.
+						(!$details['sql']['nullable'] ? 'NOT NULL ' : '');
+			if(isset($details['key']) && $details['key'] === 'primary') {
+				$request .= 'AUTO_INCREMENT PRIMARY KEY';
+			}
+			$i++;
+			if($i < $max) {
+				$request .= ',';
+			}
+		}
+		$request .= ')';
+		return $this->get_mysql()->query($request);
+	}
+
 	protected function get_mysql() {
 		return $this->mysql;
 	}
@@ -52,6 +87,9 @@ class Entity {
 					}
 					if(strstr($doc_line, '@var ') !== false) {
 						$this->fields[$prop->getName()]['type'] = explode(' ', $doc_line)[1];
+						if(explode(' ', $doc_line)[1] === 'bool') {
+							$this->fields[$prop->getName()]['sql']['type'] = 'boolean';
+						}
 					}
 					if($doc_line === '@text') {
 						$this->fields[$prop->getName()]['sql']['type'] = 'TEXT';
@@ -60,6 +98,12 @@ class Entity {
 						$this->fields[$prop->getName()]['sql']['type'] = 'VARCHAR';
 						$this->fields[$prop->getName()]['sql']['size'] = (int)str_replace(['@size(', ')'], '', $doc_line);
 					}
+					if($doc_line === '@not_null') {
+						$this->fields[$prop->getName()]['sql']['nullable'] = false;
+					}
+				}
+				if(!isset($this->fields[$prop->getName()]['sql']['nullable'])) {
+					$this->fields[$prop->getName()]['sql']['nullable'] = true;
 				}
 			}
 		}

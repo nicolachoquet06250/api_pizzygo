@@ -3,7 +3,7 @@
 class Base {
 	/**
 	 * @param $model
-	 * @return mixed
+	 * @return Model
 	 * @throws Exception
 	 */
 	protected function get_model($model) {
@@ -38,7 +38,7 @@ class Base {
 
 	/**
 	 * @param $dao
-	 * @return mixed
+	 * @return Repository
 	 * @throws Exception
 	 */
 	protected function get_dao($dao) {
@@ -47,7 +47,7 @@ class Base {
 
 	/**
 	 * @param $repository
-	 * @return mixed
+	 * @return Repository
 	 * @throws Exception
 	 */
 	protected function get_repository($repository) {
@@ -66,5 +66,34 @@ class Base {
 		else {
 			throw new Exception('La classe '.$repository.' n\'existe pas !');
 		}
+	}
+
+	/**
+	 * @param $entity
+	 * @return Entity
+	 * @throws Exception
+	 */
+	protected function get_entity($entity) {
+		$entity = ucfirst($entity).'Entity';
+		if(file_exists(__DIR__.'/../entities/'.$entity.'.php')) {
+			require_once __DIR__.'/../entities/'.$entity.'.php';
+			/** @var Entity $o_service */
+			return new $entity();
+		}
+		else {
+			throw new Exception('\'La classe '.$entity.' n\'existe pas !');
+		}
+	}
+
+	protected function get_entities() {
+		$directory = __DIR__.'/../entities';
+		$dir = opendir($directory);
+		$entities = [];
+		while (($elem = readdir($dir)) !== false) {
+			if($elem !== '.' && $elem !== '..') {
+				$entities[] = strtolower(str_replace('Entity.php', '', $elem));
+			}
+		}
+		return $entities;
 	}
 }
