@@ -23,6 +23,9 @@ class Router extends Base {
 	 */
 	public static function create(string $uri, callable $callback, callable $catch) {
 		try {
+			if(substr($uri, 0, strlen('/index.php')) === '/index.php') {
+				$uri = str_replace('/index.php', '', $uri);
+			}
 			$router = new Router($uri);
 			return $router->execute($callback);
 		}
