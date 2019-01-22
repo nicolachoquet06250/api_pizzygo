@@ -54,14 +54,23 @@ class Entity {
 		return $this->get_mysql()->query($request);
 	}
 
+	/**
+	 * @return mysqli|null
+	 */
 	protected function get_mysql() {
 		return $this->mysql;
 	}
 
+	/**
+	 * @param mysqli $mysqli
+	 */
 	public function set_mysql(mysqli $mysqli) {
 		$this->mysql = $mysqli;
 	}
 
+	/**
+	 * @return bool
+	 */
 	public function isUpdated() {
 		return $this->updated;
 	}
@@ -109,6 +118,9 @@ class Entity {
 		}
 	}
 
+	/**
+	 * @return string
+	 */
 	public function get_primary_key() {
 		return $this->primary_key;
 	}
@@ -127,6 +139,21 @@ class Entity {
 		return $fields;
 	}
 
+	/**
+	 * @param array $array
+	 * @return $this
+	 */
+	public function initFromArray(array $array) {
+		foreach ($array as $key => $value) {
+			$this->set($key, $value);
+		}
+		return $this;
+	}
+
+	/**
+	 * @param bool $exists
+	 * @return bool|Entity
+	 */
 	public function save($exists = true) {
 		if($exists) {
 			$request = 'UPDATE '.$this->table_name.' SET ';
