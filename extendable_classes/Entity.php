@@ -101,6 +101,9 @@ class Entity extends Base {
 				$this->fields[$prop->getName()]['sql']['nullable'] = true;
 				foreach ($doc_comment as $doc_line) {
 					if($doc_line !== '') {
+						if(strstr($doc_line, '@JsonExclude')) {
+							$this->fields[$prop->getName()]['json_exclude'] = true;
+						}
 						if (strstr($doc_line, '@primary')) {
 							$this->primary_key                     = $prop->getName();
 							$this->fields[$prop->getName()]['key'] = 'primary';
@@ -260,5 +263,21 @@ class Entity extends Base {
 			$this->fields[$prop]['value'] = $value;
 			if($update) $this->updated = $update;
 		}
+	}
+
+	public function toArrayForJson() {
+		$array = [];
+		foreach ($this->get_fields() as $field => $details) {
+			$value = $this->get($field);
+			if(isset($details['entity'])) {
+				/** @var Entity $entity */
+				$entity = $this->get($field);
+				$value = $entity->get($details['entity']['searchBy']);
+			}
+			if(!isset($details['json_exclude'])) {
+				$array[$field] = $value;
+			}
+		}
+		return $array;
 	}
 }

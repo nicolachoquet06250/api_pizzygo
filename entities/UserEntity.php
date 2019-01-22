@@ -41,6 +41,7 @@ class UserEntity extends Entity {
 	 * @var string $password
 	 * @not_null
 	 * @size(255)
+	 * @JsonExclude
 	 */
 	protected $password = '';
 	/**
