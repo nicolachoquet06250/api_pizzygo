@@ -1,4 +1,4 @@
-#Options +FollowSymlinks
+#Options -Indexes +FollowSymlinks +MultiViews
 
 RewriteEngine on
 
