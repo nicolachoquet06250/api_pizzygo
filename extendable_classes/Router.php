@@ -18,12 +18,18 @@ class Router extends Base {
 	/**
 	 * @param string $uri
 	 * @param callable $callback
+	 * @param callable $catch
 	 * @return mixed
-	 * @throws Exception
 	 */
-	public static function create(string $uri, callable $callback) {
-		$router = new Router($uri);
-		return $router->execute($callback);
+	public static function create(string $uri, callable $callback, callable $catch) {
+		try {
+			$router = new Router($uri);
+			return $router->execute($callback);
+		}
+		catch (Exception $e) {
+			$catch($e);
+		}
+		return false;
 	}
 
 	private function parse_uri() {
