@@ -1,0 +1,7 @@
+#Options +FollowSymlinks
+
+RewriteEngine on
+
+RewriteRule ^([a-z0-9\_]+)/([a-z0-9\_]+)\?([^/])$   /?controller=$1&action=$2&$3 [L]
+RewriteRule ^([a-z0-9\_]+)\?([^/])$                 /?controller=$1&$2 [L]
+RewriteRule ^\?([^/])$                              /?$1 [L]

@@ -5,12 +5,16 @@ require_once __DIR__.'/autoload.php';
 header('Content-Type: application/json');
 
 try {
-	if(isset($_GET['controller'])) {
-		$setup = new Setup($_GET['controller']);
+	if(strstr($_SERVER['SERVER_SOFTWARE'], 'PHP')) {
+		echo Router::create($_SERVER['REQUEST_URI'], function (string $controller, HttpService $http) {
+			$setup = new Setup($controller);
+			return $setup->run();
+		});
+		return;
 	}
-	else {
+	if(!isset($_GET['controller']))
 		throw new Exception('Vous devez définir un controlleur !');
-	}
+	$setup = new Setup($_GET['controller']);
 	echo $setup->run();
 } catch (Exception $e) {
 	exit(

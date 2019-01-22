@@ -7,6 +7,7 @@ class HttpService extends Service {
 	protected $files;
 	protected $response_header;
 	protected $session;
+	protected $server;
 
 	public function initialize_after_injection() {
 		$this->get = $_GET;
@@ -14,6 +15,7 @@ class HttpService extends Service {
 		$this->files = $_FILES;
 		$this->response_header = isset($http_response_header) ? $http_response_header : null;
 		$this->session = isset($_SESSION) ? $_SESSION : null;
+		$this->server = isset($_SERVER) ? $_SERVER : null;
 	}
 
 	public function get($key = null) {
@@ -48,5 +50,12 @@ class HttpService extends Service {
 			return $this->session;
 		}
 		return isset($this->response_header[$key]) ? $this->response_header[$key] : null;
+	}
+
+	public function server($key = null) {
+		if(is_null($key)) {
+			return $this->server;
+		}
+		return isset($this->server[$key]) ? $this->server[$key] : null;
 	}
 }
