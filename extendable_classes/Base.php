@@ -85,6 +85,9 @@ class Base {
 		}
 	}
 
+	/**
+	 * @return array
+	 */
 	protected function get_entities() {
 		$directory = __DIR__.'/../entities';
 		$dir = opendir($directory);

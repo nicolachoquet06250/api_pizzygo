@@ -1,6 +1,6 @@
 <?php
 
-class Controller extends Base {
+abstract class Controller extends Base {
 	private $method;
 	protected $params;
 
@@ -27,6 +27,8 @@ class Controller extends Base {
 		}
 	}
 
+	abstract protected function index();
+
 	/**
 	 * @return array
 	 */
@@ -35,14 +37,26 @@ class Controller extends Base {
 		return $this->$method();
 	}
 
+	/**
+	 * @param $key
+	 * @return string|null
+	 */
 	protected function get($key) {
 		return isset($this->params[$key]) ? $this->params[$key] : null;
 	}
 
+	/**
+	 * @param $key
+	 * @return string|null
+	 */
 	protected function post($key) {
 		return isset($_POST[$key]) ? $_POST[$key] : null;
 	}
 
+	/**
+	 * @param $key
+	 * @return mixed
+	 */
 	protected function files($key) {
 		return isset($_FILES[$key]) ? $_FILES[$key] : null;
 	}
