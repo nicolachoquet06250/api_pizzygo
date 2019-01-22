@@ -11,7 +11,8 @@ class HomeController extends Controller {
 		return [
 			'controller' => 'home',
 			'get' => $http_service->get(),
-			'session' => $http_service->session()
+			'session' => $http_service->session(),
+			'server' => $_SERVER['SERVER_SOFTWARE'],
 		];
 	}
 }
