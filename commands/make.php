@@ -16,7 +16,7 @@ class make extends cmd {
 		$mailer->Host = 'smtp.gmail.com';
 		$mailer->Port = 465;
 		$mailer->Username = 'nicolachoquet06250@gmail.com';
-		$mailer->Password = '1204NicolasChoquet2669!';
+		$mailer->Password = '12042107NicolasChoquet2669!';
 		$mailer->SetFrom($mailer->Username, 'Pizzygo');
 		$mailer->Subject = '';
 		$mailer->Body = 'SMS';
