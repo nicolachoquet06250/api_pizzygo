@@ -6,6 +6,10 @@ if(is_file(__DIR__.'/mvc/models/BaseModel.php')) {
 	require_once __DIR__.'/mvc/models/BaseModel.php';
 }
 
+if(is_file(__DIR__.'/vendor/autoload.php')) {
+	require_once __DIR__.'/vendor/autoload.php';
+}
+
 if(is_dir(__DIR__.'/mvc/controllers')) {
 	$dir = opendir(__DIR__.'/mvc/controllers');
 	while (($elem = readdir($dir)) !== false) {

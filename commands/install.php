@@ -1,12 +1,6 @@
 <?php
 
 class install extends cmd {
-	private $git_dependencies = [
-		[
-			'https://github.com/PHPMailer/PHPMailer.git',
-			'PHPMailer'
-		]
-	];
 	/**
 	 * @throws Exception
 	 */
@@ -27,11 +21,5 @@ class install extends cmd {
 		/** @var InstallService $install_service */
 		$install_service = $this->get_service('install');
 		$install_service->databases();
-	}
-
-	protected function dependencies() {
-		foreach ($this->git_dependencies as $git_dependency) {
-			exec('cd '.__DIR__.'/../extendable_classes && git clone '.$git_dependency[0].' '.$git_dependency[1]);
-		}
 	}
 }

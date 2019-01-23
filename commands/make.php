@@ -1,5 +1,7 @@
 <?php
 
+use PHPMailer\PHPMailer\PHPMailer;
+
 class make extends cmd {
 	/**
 	 * @return bool|string
@@ -8,9 +10,10 @@ class make extends cmd {
 	protected function send_sms() {
 		$sPhoneNum = '+33763207630'; // Le numéro de téléphone qui recevra l'SMS (avec le préfixe, ex: +33)
 		$aProviders = ['mms.bouyguestelecom.fr', 'sfr.fr', 'orange.fr', 'smtp.free.fr', 'pop.free.fr'];
-		$mailer = new \PHPMailer\PHPMailer\PHPMailer(true);
+
+		$mailer = new PHPMailer(true);
 		$mailer->IsSMTP(); // active SMTP
-		$mailer->SMTPDebug = 0;  // debogage: 1 = Erreurs et messages, 2 = messages seulement
+		$mailer->SMTPDebug = 1;  // debogage: 1 = Erreurs et messages, 2 = messages seulement
 		$mailer->SMTPAuth = true;  // Authentification SMTP active
 		$mailer->SMTPSecure = 'ssl'; // Gmail REQUIERT Le transfert securise
 		$mailer->Host = 'smtp.gmail.com';
@@ -18,12 +21,14 @@ class make extends cmd {
 		$mailer->Username = 'nicolachoquet06250@gmail.com';
 		$mailer->Password = '12042107NicolasChoquet2669!';
 		$mailer->SetFrom($mailer->Username, 'Pizzygo');
-		$mailer->Subject = '';
+		$mailer->Subject = 'SMS';
 		$mailer->Body = 'SMS';
-		foreach ($aProviders as $sProvider) {
-			$to = $sPhoneNum . '@' . $sProvider . '.com';
-			$mailer->AddAddress($to);
-		}
+		$to = 'nicolachoquet06250@gmail.com';
+		$mailer->AddAddress($to);
+//		foreach ($aProviders as $sProvider) {
+//			$to = $sPhoneNum . '@' . $sProvider . '.com';
+//			$mailer->AddAddress($to);
+//		}
 		if(!$mailer->Send()) {
 			return 'Mail error: '.$mailer->ErrorInfo;
 		} else {
