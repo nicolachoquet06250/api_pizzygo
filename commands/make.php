@@ -17,7 +17,7 @@ class make extends cmd {
 		$mailer->SMTPAuth = true;  // Authentification SMTP active
 		$mailer->SMTPSecure = 'ssl'; // Gmail REQUIERT Le transfert securise
 		$mailer->Host = 'smtp.gmail.com';
-		$mailer->Port = 465;
+		$mailer->Port = 587;
 		$mailer->Username = 'nicolachoquet06250@gmail.com';
 		$mailer->Password = '12042107NicolasChoquet2669!';
 		$mailer->SetFrom($mailer->Username, 'Pizzygo');
