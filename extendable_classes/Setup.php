@@ -1,7 +1,9 @@
 <?php
 
-class Setup {
+class Setup extends Base {
 	private $controller;
+	/** @var JsonService $json_service */
+	private $json_service;
 
 	/**
 	 * Setup constructor.
@@ -18,6 +20,7 @@ class Setup {
 		else {
 			throw new Exception('Le controlleur '.$controller.' n\'existe pas !');
 		}
+		$this->json_service = $this->get_service('json');
 	}
 
 	/**
@@ -39,6 +42,6 @@ class Setup {
 		$parzms = $_GET;
 		/** @var Controller $ctrl */
 		$ctrl = new $controller($action, $parzms);
-		return json_encode($ctrl->run());
+		return $this->json_service->encode($ctrl->run());
 	}
 }

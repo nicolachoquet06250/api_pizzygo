@@ -96,7 +96,7 @@ class Repository extends Base {
 	/**
 	 * @param $field
 	 * @param $value
-	 * @return array
+	 * @return array|bool
 	 * @throws Exception
 	 */
 	public function getBy($field, $value) {
@@ -105,16 +105,19 @@ class Repository extends Base {
 							  .(gettype($value) === 'string' ? '"'.$value.'"' : $value));
 		$entities = [];
 		$entity_class = $this->entity_class;
-		while ($entity = $query->fetch_assoc()) {
-			/** @var Entity $_entity */
-			$_entity = new $entity_class();
-			foreach ($entity as $key => $value) {
-				$_entity->set($key, $value);
+		if($query) {
+			while ($entity = $query->fetch_assoc()) {
+				/** @var Entity $_entity */
+				$_entity = new $entity_class();
+				foreach ($entity as $key => $value) {
+					$_entity->set($key, $value);
+				}
+				$entities[] = $_entity;
 			}
-			$entities[] = $_entity;
+			$this->result = $entities;
+			return $entities;
 		}
-		$this->result = $entities;
-		return $entities;
+		return false;
 	}
 
 	/**
@@ -143,7 +146,6 @@ class Repository extends Base {
 		if(get_class($entity) === 'Closure') {
 			$entity = $entity(new Base());
 		}
-		$entity->set_mysql($this->mysql);
 		return $entity->save(false);
 	}
 

@@ -12,6 +12,7 @@ class cmd extends Base {
 	 */
 	public function __construct($args) {
 		$this->args = $args;
+		$this->clean_args();
 		/** @var MysqlService $mysql_service */
 		$mysql_service = $this->get_service('mysql');
 		$this->mysql = $mysql_service->get_connector();
@@ -21,10 +22,24 @@ class cmd extends Base {
 		return isset($this->args[$key]) ? $this->args[$key] : null;
 	}
 
+	protected function clean_args() {
+		$args = [];
+		foreach ($this->args as $arg) {
+			$args[explode('=', $arg)[0]] = explode('=', $arg)[1];
+		}
+		$this->args = $args;
+	}
+
+	/**
+	 * @param $method
+	 * @return mixed
+	 * @throws Exception
+	 */
 	public function run($method) {
 		if(in_array($method, get_class_methods(get_class($this)))) {
-			$this->$method();
+			return $this->$method();
 		}
+		throw new Exception('La commande '.get_class($this).'::'.$method.'() n\'existe pas !!');
 	}
 
 	protected function get_mysql() {

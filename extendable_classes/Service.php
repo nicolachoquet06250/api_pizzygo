@@ -1,5 +1,5 @@
 <?php
 
-abstract class Service {
+abstract class Service extends Base {
 	abstract public function initialize_after_injection();
 }

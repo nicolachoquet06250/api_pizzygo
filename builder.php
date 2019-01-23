@@ -8,5 +8,5 @@ try {
 	);
 }
 catch (Exception $e) {
-	exit($e->getMessage());
+	exit($e->getMessage()."\n");
 }

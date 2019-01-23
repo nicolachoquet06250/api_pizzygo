@@ -11,6 +11,10 @@ class Command extends Base {
 		return $_args;
 	}
 
+	/**
+	 * @param $args
+	 * @throws Exception
+	 */
 	public static function create($args) {
 		if(strstr($args[0], ':')) {
 			$args[0] = explode(':', $args[0]);
@@ -26,6 +30,17 @@ class Command extends Base {
 		require_once __DIR__.'/../commands/'.$controller.'.php';
 		/** @var cmd $cmd */
 		$cmd = new $controller($args);
-		$cmd->run($action);
+		$result = $cmd->run($action);
+		if($result) {
+			if(is_array($result)) {
+				var_dump($result);
+			}
+			if(is_string($result)) {
+				echo $result."\n";
+			}
+			if(is_numeric($result)) {
+				exit($result);
+			}
+		}
 	}
 }

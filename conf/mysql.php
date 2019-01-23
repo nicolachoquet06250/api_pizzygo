@@ -1,11 +1,8 @@
 <?php
-$cnf = file_get_contents(__DIR__.'/mysql.txt');
-$cnf = explode(";", $cnf);
-$_cnf = [];
-foreach ($cnf as $item) {
-	if($item !== '') {
-		$item = str_replace(["\n", "\r"], '', $item);
-		$_cnf[explode('=', $item)[0]] = explode('=', $item)[1];
+
+class mysql extends Conf {
+	public function __construct() {
+		$cnf = file_get_contents(__DIR__.'/mysql.json');
+		$this->conf = json_decode($cnf, true);
 	}
 }
-return $_cnf;

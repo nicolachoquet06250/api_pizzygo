@@ -5,14 +5,12 @@ class install extends cmd {
 	 * @throws Exception
 	 */
 	protected function db() {
-		foreach ($this->get_entities() as $entity_name) {
-			$entity = $this->get_entity($entity_name);
-			$entity->set_mysql(
-				$this->get_mysql()
-			);
-			if(!$entity->create_db()) {
-				throw new Exception('Une erreur est survenue lors de la création de la table '.$entity_name);
-			}
+		if(!is_null($this->get_arg('prefix'))) {
+			$prefix = $this->get_arg('prefix');
+			$this->get_conf('mysql')->set('table-prefix', $prefix, false);
 		}
+		/** @var InstallService $install_service */
+		$install_service = $this->get_service('install');
+		$install_service->test_databases();
 	}
 }

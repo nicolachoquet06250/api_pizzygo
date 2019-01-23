@@ -1,12 +1,13 @@
 <?php
 
 class Base {
+	private static $confs = [];
 	/**
 	 * @param $model
 	 * @return Model
 	 * @throws Exception
 	 */
-	protected function get_model($model) {
+	protected function get_model(string $model) {
 		$model = ucfirst($model).'Model';
 		if(file_exists(__DIR__.'/../mvc/models/'.$model.'.php')) {
 			require_once __DIR__.'/../mvc/models/'.$model.'.php';
@@ -22,7 +23,7 @@ class Base {
 	 * @return Service
 	 * @throws Exception
 	 */
-	protected function get_service($service) {
+	protected function get_service(string $service) {
 		$service = ucfirst($service).'Service';
 		if(file_exists(__DIR__.'/../services/'.$service.'.php')) {
 			require_once __DIR__.'/../services/'.$service.'.php';
@@ -41,7 +42,7 @@ class Base {
 	 * @return Repository
 	 * @throws Exception
 	 */
-	protected function get_dao($dao) {
+	protected function get_dao(string $dao) {
 		return $this->get_repository($dao);
 	}
 
@@ -50,7 +51,7 @@ class Base {
 	 * @return Repository
 	 * @throws Exception
 	 */
-	protected function get_repository($repository) {
+	protected function get_repository(string $repository) {
 		$repository = ucfirst($repository).'Repository';
 		if(file_exists(__DIR__.'/../dao/'.$repository.'.php')) {
 			require_once __DIR__.'/../dao/'.$repository.'.php';
@@ -60,7 +61,6 @@ class Base {
 		elseif (file_exists(__DIR__.'/../dao/'.str_replace('Repository', 'Dao', $repository).'.php')) {
 			$repository = str_replace('Repository', 'Dao', $repository);
 			require_once __DIR__.'/../dao/'.$repository.'.php';
-			/** @var Repository $o_service */
 			return new $repository();
 		}
 		else {
@@ -69,15 +69,14 @@ class Base {
 	}
 
 	/**
-	 * @param $entity
+	 * @param string $entity
 	 * @return Entity
 	 * @throws Exception
 	 */
-	protected function get_entity($entity) {
+	protected function get_entity(string $entity) {
 		$entity = ucfirst($entity).'Entity';
 		if(file_exists(__DIR__.'/../entities/'.$entity.'.php')) {
 			require_once __DIR__.'/../entities/'.$entity.'.php';
-			/** @var Entity $o_service */
 			return new $entity();
 		}
 		else {
@@ -98,5 +97,27 @@ class Base {
 			}
 		}
 		return $entities;
+	}
+
+	/**
+	 * @param string $conf
+	 * @return Conf
+	 * @throws Exception
+	 */
+	protected function get_conf(string $conf) {
+		if(file_exists(__DIR__.'/../conf/'.$conf.'.php')) {
+			if(!isset(self::$confs[$conf])) {
+				require_once __DIR__.'/../conf/'.$conf.'.php';
+				self::$confs[$conf] = new $conf();
+			}
+			return self::$confs[$conf];
+		}
+		else {
+			throw new Exception('\'La classe '.$conf.' n\'existe pas !');
+		}
+	}
+
+	public function toArrayForJson() {
+		return [];
 	}
 }

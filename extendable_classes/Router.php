@@ -20,6 +20,7 @@ class Router extends Base {
 	 * @param callable $callback
 	 * @param callable $catch
 	 * @return mixed
+	 * @throws Exception
 	 */
 	public static function create(string $uri, callable $callback, callable $catch) {
 		try {
@@ -30,7 +31,7 @@ class Router extends Base {
 			return $router->execute($callback);
 		}
 		catch (Exception $e) {
-			$catch($e);
+			$catch($e, Base::get_service('json'));
 		}
 		return false;
 	}

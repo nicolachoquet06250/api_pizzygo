@@ -6,6 +6,7 @@ class Entity extends Base {
 	private $mysql;
 	protected $updated = false;
 	protected $table_name;
+	protected $mysql_conf;
 
 	/**
 	 * Entity constructor.
@@ -20,14 +21,20 @@ class Entity extends Base {
 		$mysql_service = $this->get_service('mysql');
 		$this->mysql = $mysql_service->get_connector();
 		$this->table_name = strtolower(str_replace('Entity', '', get_class($this)));
+		$this->mysql_conf = $this->get_conf('mysql');
 	}
 
 	/**
 	 * @return bool
+	 * @throws Exception
 	 */
 	public function create_db() {
 		$fields = $this->get_fields();
-		$request = 'CREATE TABLE IF NOT EXISTS `'.$this->table_name.'` (';
+		$prefix = '';
+		if($this->mysql_conf->has_property('table-prefix')) {
+			$prefix = $this->mysql_conf->get('table-prefix');
+		}
+		$request = 'CREATE TABLE IF NOT EXISTS `'.$prefix.$this->table_name.'` (';
 		$max = count($fields);
 		$i = 0;
 		foreach ($fields as $field => $details) {
@@ -62,13 +69,6 @@ class Entity extends Base {
 	 */
 	protected function get_mysql() {
 		return $this->mysql;
-	}
-
-	/**
-	 * @param mysqli $mysqli
-	 */
-	public function set_mysql(mysqli $mysqli) {
-		$this->mysql = $mysqli;
 	}
 
 	/**
@@ -175,8 +175,12 @@ class Entity extends Base {
 	 * @throws Exception
 	 */
 	public function save($exists = true) {
+		$prefix = '';
+		if($this->mysql_conf->has_property('table-prefix')) {
+			$prefix = $this->mysql_conf->get('table-prefix');
+		}
 		if($exists) {
-			$request = 'UPDATE '.$this->table_name.' SET ';
+			$request = 'UPDATE '.$prefix.$this->table_name.' SET ';
 			$i = 0;
 			foreach ($this->get_fields(['id']) as $field => $details) {
 				if ($i > 0) {
@@ -196,7 +200,7 @@ class Entity extends Base {
 			$request .= 'WHERE `id`='.$this->get('id');
 		}
 		else {
-			$request = 'INSERT INTO '.$this->table_name.' SET ';
+			$request = 'INSERT INTO '.$prefix.$this->table_name.' SET ';
 			$i = 0;
 			foreach ($this->get_fields(['id']) as $field => $details) {
 				if ($i > 0) {
@@ -220,7 +224,7 @@ class Entity extends Base {
 		}
 		$result = $this->get_mysql()->query($request);
 		if(!$exists) {
-			$req = $this->get_mysql()->query('SELECT '.$this->get_primary_key().' FROM '.$this->table_name.' ORDER BY '.$this->get_primary_key().' DESC LIMIT 1');
+			$req = $this->get_mysql()->query('SELECT '.$this->get_primary_key().' FROM '.$prefix.$this->table_name.' ORDER BY '.$this->get_primary_key().' DESC LIMIT 1');
 			while (list($id) = $req->fetch_array()) {
 				$id = (int)$id;
 				$this->set('id', $id);
@@ -230,7 +234,11 @@ class Entity extends Base {
 	}
 
 	public function delete() {
-		$this->get_mysql()->query('DELETE FROM '.$this->table_name.' WHERE `id`='.$this->get('id'));
+		$prefix = '';
+		if($this->mysql_conf->has_property('table-prefix')) {
+			$prefix = $this->mysql_conf->get('table-prefix');
+		}
+		$this->get_mysql()->query('DELETE FROM '.$prefix.$this->table_name.' WHERE `id`='.$this->get('id'));
 	}
 
 	/**
