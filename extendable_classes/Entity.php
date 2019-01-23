@@ -285,6 +285,12 @@ class Entity extends Base {
 			if(!isset($details['json_exclude'])) {
 				$array[$field] = $value;
 			}
+			if($details['type'] === 'int') {
+				$array[$field] = (int)$value;
+			}
+			if($details['type'] === 'bool') {
+				$array[$field] = (bool)$value;
+			}
 		}
 		return $array;
 	}

@@ -3,6 +3,8 @@
 abstract class Controller extends Base {
 	private $method;
 	protected $params;
+	/** @var HttpService $http_service */
+	protected $http_service;
 
 	/**
 	 * Controller constructor.
@@ -25,6 +27,7 @@ abstract class Controller extends Base {
 		else {
 			throw new Exception('La méthode '.get_class($this).'::'.$action.'() n\'existe pas !');
 		}
+		$this->http_service = $this->get_service('http');
 	}
 
 	abstract protected function index();
@@ -42,7 +45,7 @@ abstract class Controller extends Base {
 	 * @return string|null
 	 */
 	protected function get($key) {
-		return isset($this->params[$key]) ? $this->params[$key] : null;
+		return $this->http_service->get($key);
 	}
 
 	/**
@@ -50,7 +53,7 @@ abstract class Controller extends Base {
 	 * @return string|null
 	 */
 	protected function post($key) {
-		return isset($_POST[$key]) ? $_POST[$key] : null;
+		return $this->http_service->post($key);
 	}
 
 	/**
@@ -58,6 +61,6 @@ abstract class Controller extends Base {
 	 * @return mixed
 	 */
 	protected function files($key) {
-		return isset($_FILES[$key]) ? $_FILES[$key] : null;
+		return $this->http_service->files($key);
 	}
 }

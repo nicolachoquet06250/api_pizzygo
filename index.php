@@ -1,7 +1,8 @@
 <?php
+ini_set('display_errors', 'on');
 
 require_once __DIR__.'/autoload.php';
-// format de données du document
+
 header('Content-Type: application/json');
 echo Router::create($_SERVER['REQUEST_URI'],
 	function (string $controller) {

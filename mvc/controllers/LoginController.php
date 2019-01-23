@@ -5,7 +5,7 @@ class LoginController extends Controller {
 	 * @throws Exception
 	 */
 	public function index() {
-		$this->login();
+		return $this->login();
 	}
 
 	/**
@@ -14,6 +14,12 @@ class LoginController extends Controller {
 	public function login() {
 		/** @var LoginModel $model */
 		$model = $this->get_model('login');
-		return [];
+		$user = $model->login($this->get('email'), $this->get('password'));
+		if($user) {
+			if (is_object($user) && $model->register_session($user)) {
+				return $user->toArrayForJson();
+			}
+		}
+		return $user;
 	}
 }

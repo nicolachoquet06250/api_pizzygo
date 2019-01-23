@@ -42,6 +42,7 @@ class Setup extends Base {
 		$parzms = $_GET;
 		/** @var Controller $ctrl */
 		$ctrl = new $controller($action, $parzms);
-		return $this->json_service->encode($ctrl->run());
+		$run = $ctrl->run();
+		return $this->json_service->encode($run);
 	}
 }

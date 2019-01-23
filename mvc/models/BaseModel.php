@@ -1,6 +1,7 @@
 <?php
 
 class BaseModel extends Model {
+	/** @var mysqli  */
 	private $mysql;
 
 	/**

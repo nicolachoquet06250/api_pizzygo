@@ -23,7 +23,6 @@ class Main extends Base {
 				'activate_token' => ''
 			]
 		);
-		var_dump($user->toArrayForJson());
 	}
 }
 

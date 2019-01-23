@@ -3,8 +3,9 @@
 class Repository extends Base {
 	private $entity_class;
 	private $mysql;
-	private $table_name;
+	protected $table_name;
 	private $result = [];
+	protected $mysql_conf;
 
 	/**
 	 * Repository constructor.
@@ -22,6 +23,7 @@ class Repository extends Base {
 		$this->table_name = strtolower(str_replace('Entity', '', $this->entity_class));
 		require_once __DIR__.'/../entities/'.$this->entity_class.'.php';
 		/** @var MysqlService $mysql_service */
+		$this->mysql_conf = $this->get_conf('mysql');
 		$mysql_service = $this->get_service('mysql');
 		$this->mysql = $mysql_service->get_connector();
 	}
@@ -38,7 +40,11 @@ class Repository extends Base {
 	 * @throws Exception
 	 */
 	public function getAll() {
-		$query = $this->get_mysql()->query('SELECT * FROM '.$this->table_name);
+		$prefix = '';
+		if($this->mysql_conf->has_property('table-prefix')) {
+			$prefix = $this->mysql_conf->get('table-prefix');
+		}
+		$query = $this->get_mysql()->query('SELECT * FROM '.$prefix.$this->table_name);
 		$entities = [];
 		$entity_class = $this->entity_class;
 		while ($entity = $query->fetch_assoc()) {
@@ -58,7 +64,11 @@ class Repository extends Base {
 	 * @throws Exception
 	 */
 	public function getAllDesc() {
-		$query = $this->get_mysql()->query('SELECT * FROM '.$this->table_name.' ORDER BY `id` DESC');
+		$prefix = '';
+		if($this->mysql_conf->has_property('table-prefix')) {
+			$prefix = $this->mysql_conf->get('table-prefix');
+		}
+		$query = $this->get_mysql()->query('SELECT * FROM '.$prefix.$this->table_name.' ORDER BY `id` DESC');
 		$entities = [];
 		$entity_class = $this->entity_class;
 		while ($entity = $query->fetch_assoc()) {
@@ -78,7 +88,11 @@ class Repository extends Base {
 	 * @throws Exception
 	 */
 	public function getAllAsc() {
-		$query = $this->get_mysql()->query('SELECT * FROM '.$this->table_name.' ORDER BY `id` ASC');
+		$prefix = '';
+		if($this->mysql_conf->has_property('table-prefix')) {
+			$prefix = $this->mysql_conf->get('table-prefix');
+		}
+		$query = $this->get_mysql()->query('SELECT * FROM '.$prefix.$this->table_name.' ORDER BY `id` ASC');
 		$entities = [];
 		$entity_class = $this->entity_class;
 		while ($entity = $query->fetch_assoc()) {
@@ -100,8 +114,12 @@ class Repository extends Base {
 	 * @throws Exception
 	 */
 	public function getBy($field, $value) {
+		$prefix = '';
+		if($this->mysql_conf->has_property('table-prefix')) {
+			$prefix = $this->mysql_conf->get('table-prefix');
+		}
 		$query = $this->get_mysql()
-					  ->query('SELECT * FROM '.$this->table_name.' WHERE `'.$field.'`='
+					  ->query('SELECT * FROM '.$prefix.$this->table_name.' WHERE `'.$field.'`='
 							  .(gettype($value) === 'string' ? '"'.$value.'"' : $value));
 		$entities = [];
 		$entity_class = $this->entity_class;
@@ -129,6 +147,9 @@ class Repository extends Base {
 		return $this->getBy('id', $id);
 	}
 
+	/**
+	 * @throws Exception
+	 */
 	public function save() {
 		/** @var Entity $entity */
 		foreach ($this->result as $entity) {

@@ -1,5 +1,4 @@
 <?php
-session_start();
 
 class HttpService extends Service {
 	protected $get;
@@ -9,6 +8,9 @@ class HttpService extends Service {
 	protected $session;
 	protected $server;
 
+	/**
+	 * @throws Exception
+	 */
 	public function initialize_after_injection() {
 		$this->get = $_GET;
 		$this->post = $_POST;
@@ -16,6 +18,20 @@ class HttpService extends Service {
 		$this->response_header = isset($http_response_header) ? $http_response_header : null;
 		$this->session = isset($_SESSION) ? $_SESSION : null;
 		$this->server = isset($_SERVER) ? $_SERVER : null;
+		$body_request = file_get_contents('php://input');
+		/** @var OsService $service_os */
+		$service_os = $this->get_service('os');
+		if($body_request) {
+			if ($service_os->IAmOnUnixSystem()) {
+				$body_request = explode("\n", $body_request);
+			}
+			else {
+				$body_request = explode("\r", $body_request);
+			}
+			foreach ($body_request as $item) {
+				$_POST[explode('=', $item)[0]] = explode('=', $item)[1];
+			}
+		}
 	}
 
 	public function get($key = null) {
@@ -44,12 +60,18 @@ class HttpService extends Service {
 		return isset($this->response_header[$key]) ? $this->response_header[$key] : null;
 	}
 
+	/**
+	 * @param null $key
+	 * @param null $value
+	 * @return mixed|null
+	 * @throws Exception
+	 */
 	public function session($key = null, $value = null) {
-		if(!is_null($value)) $this->response_header[$key] = $value;
+		if(!is_null($value)) $this->get_service('session')->set($key, $value);
 		if(is_null($key)) {
 			return $this->session;
 		}
-		return isset($this->response_header[$key]) ? $this->response_header[$key] : null;
+		return $this->get_service('session')->get($key);
 	}
 
 	public function server($key = null) {
