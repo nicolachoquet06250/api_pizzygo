@@ -25,7 +25,7 @@ class SessionService extends Service {
 	 * @param string $key
 	 */
 	public function remove(string $key) {
-		if($this->has_key($_SESSION[$key])) {
+		if($this->has_key($key)) {
 			unset($_SESSION[$key]);
 		}
 	}

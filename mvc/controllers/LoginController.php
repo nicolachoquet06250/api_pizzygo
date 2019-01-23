@@ -22,4 +22,28 @@ class LoginController extends Controller {
 		}
 		return $user;
 	}
+
+	/**
+	 * @return array
+	 * @throws Exception
+	 */
+	public function logged() {
+		/** @var LoginModel $model */
+		$model = $this->get_model('login');
+		return [
+			'logged' => $model->isLogged()
+		];
+	}
+
+	/**
+	 * @throws Exception
+	 */
+	public function disconnect() {
+		/** @var LoginModel $model */
+		$model = $this->get_model('login');
+
+		return [
+			'disconnected' => $model->delete_session()
+		];
+	}
 }
