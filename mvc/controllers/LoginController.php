@@ -2,9 +2,10 @@
 
 class LoginController extends Controller {
 	/**
+	 * @inheritdoc
 	 * @throws Exception
 	 */
-	public function index() {
+	protected function index() {
 		return $this->login();
 	}
 
@@ -14,7 +15,7 @@ class LoginController extends Controller {
 	public function login() {
 		/** @var LoginModel $model */
 		$model = $this->get_model('login');
-		$user = $model->login($this->get('email'), $this->get('password'));
+		$user = $model->login($this->post('email'), $this->post('password'));
 		if($user) {
 			if (is_object($user) && $model->register_session($user)) {
 				return $user->toArrayForJson();
@@ -45,5 +46,15 @@ class LoginController extends Controller {
 		return [
 			'disconnected' => $model->delete_session()
 		];
+	}
+
+	/**
+	 * @return mixed
+	 * @throws Exception
+	 */
+	public function logged_user() {
+		/** @var SessionService $session_service */
+		$session_service = $this->get_service('session');
+		return $session_service->get('user');
 	}
 }

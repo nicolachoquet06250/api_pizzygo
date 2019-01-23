@@ -2,6 +2,10 @@
 
 class RegisterController extends Controller {
 
+	/**
+	 * @inheritdoc
+	 * @throws Exception
+	 */
 	protected function index() {
 		return $this->register();
 	}

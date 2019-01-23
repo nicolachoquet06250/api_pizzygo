@@ -2,10 +2,18 @@
 
 class HomeController extends Controller {
 	/**
+	 * @inheritdoc
+	 * @throws Exception
+	 */
+	protected function index() {
+		return $this->home();
+	}
+
+	/**
 	 * @return array
 	 * @throws Exception
 	 */
-	public function index() {
+	protected function home() {
 		/** @var HttpService $http_service */
 		$http_service = $this->get_service('http');
 		return [

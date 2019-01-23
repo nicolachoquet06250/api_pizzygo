@@ -5,6 +5,8 @@ abstract class Controller extends Base {
 	protected $params;
 	/** @var HttpService $http_service */
 	protected $http_service;
+	/** @var ErrorController $http_error */
+	protected $http_error;
 
 	/**
 	 * Controller constructor.
@@ -14,22 +16,21 @@ abstract class Controller extends Base {
 	 * @throws Exception
 	 */
 	public function __construct($action, $params) {
-		// Si ma méthode existe
 		$current_class = get_class($this);
 		$class_methods = get_class_methods($current_class);
-		// Je vérifie l'existance de la méthode qui est la valeur de $action
+		$this->http_service = $this->get_service('http');
+
 		if(in_array($action, $class_methods)) {
-			// Je valorise mes propriétés
 			$this->method = $action;
 			$this->params = $params;
 		}
-		// Sinon je lance une exception
-		else {
-			throw new Exception('La méthode '.get_class($this).'::'.$action.'() n\'existe pas !');
-		}
-		$this->http_service = $this->get_service('http');
+		else $this->http_error = $this->get_error_controller(404)
+									 ->message('La méthode '.get_class($this).'::'.$action.'() n\'existe pas !');
 	}
 
+	/**
+	 * @return array
+	 */
 	abstract protected function index();
 
 	/**
@@ -37,6 +38,9 @@ abstract class Controller extends Base {
 	 */
 	public function run() {
 		$method = $this->method;
+		if($this->http_error) {
+			return $this->http_error->display();
+		}
 		return $this->$method();
 	}
 
@@ -62,5 +66,15 @@ abstract class Controller extends Base {
 	 */
 	protected function files($key) {
 		return $this->http_service->files($key);
+	}
+
+	/**
+	 * @param int $code
+	 * @return ErrorController
+	 * @throws Exception
+	 */
+	protected function get_error_controller(int $code) {
+		$error_action = '_'.$code;
+		return new ErrorController($error_action, []);
 	}
 }
