@@ -22,6 +22,7 @@ class InstallService extends Service {
 				throw new Exception('Une erreur est survenue lors de la création de la table '.$entity_name);
 			}
 		}
+		return true;
 	}
 
 	/**

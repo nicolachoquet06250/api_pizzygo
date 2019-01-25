@@ -378,11 +378,15 @@ class install extends cmd {
 
 	/**
 	 * @throws Exception
+	 * @return string
 	 */
 	protected function db() {
 		/** @var InstallService $install_service */
 		$install_service = $this->get_service('install');
-		$install_service->databases();
+		if($install_service->databases()) {
+			return 'L\'installation de la base de donnée s\'est effectuée avec succes !!';
+		}
+		return '';
 	}
 
 	/**

@@ -34,7 +34,7 @@ class Entity extends Base {
 		$max = count($fields);
 		$i = 0;
 		foreach ($fields as $field => $details) {
-			if(isset($details['in_table']) || $details['in_table'] !== false) {
+			if(!isset($details['in_table'])) {
 				$size = 0;
 				if ($details['type'] === 'int' || $details['type'] === 'float') {
 					$size = 11;
@@ -128,7 +128,7 @@ class Entity extends Base {
 				];
 			},
 			'@not_in_table' => function(ReflectionProperty $prop) {
-				$this->fields[$prop->getName()]['in_table'] = false;
+				$this->fields[$prop->getName()]['not_in_table'] = true;
 			}
 		];
 
