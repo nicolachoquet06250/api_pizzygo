@@ -78,4 +78,19 @@ class help extends cmd {
 			$this->get_conf('mysql')->get('database'),
 		];
 	}
+
+	/**
+	 * @throws Exception
+	 */
+	protected function get_by_user_id() {
+		/** @var RoleDao $dao */
+		$dao = $this->get_dao('role');
+		/** @var RoleEntity $roles */
+		$roles = $dao->getBy('user_id', 2);
+		/** @var RoleEntity $role */
+		foreach ($roles as $i => $role) {
+			$roles[$i] = $role->toArrayForJson();
+		}
+		return $roles;
+	}
 }

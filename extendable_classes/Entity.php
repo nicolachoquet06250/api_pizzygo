@@ -30,37 +30,41 @@ class Entity extends Base {
 	 */
 	public function create_db() {
 		$fields = $this->get_fields();
-		$prefix = '';
-		if($this->mysql_conf->has_property('table-prefix')) {
-			$prefix = $this->mysql_conf->get('table-prefix');
-		}
-		$request = 'CREATE TABLE IF NOT EXISTS `'.$prefix.$this->table_name.'` (';
+		$request = 'CREATE TABLE IF NOT EXISTS '.$this->get_table_name().' (';
 		$max = count($fields);
 		$i = 0;
 		foreach ($fields as $field => $details) {
-			$size = 0;
-			if($details['type'] === 'int' || $details['type'] === 'float') {
-				$size = 11;
-			}
-			elseif (isset($details['sql']['type'])) {
-				if(isset($details['sql']['size'])) {
-					$size = $details['sql']['size'];
+			if(isset($details['in_table']) || $details['in_table'] !== false) {
+				$size = 0;
+				if ($details['type'] === 'int' || $details['type'] === 'float') {
+					$size = 11;
+				} elseif (isset($details['sql']['type'])) {
+					if (isset($details['sql']['size'])) {
+						$size = $details['sql']['size'];
+					}
+				} else {
+					$size = null;
 				}
-			}
-			else {
-				$size = null;
-			}
-			$request .= $field.' '.strtoupper((isset($details['sql']['type']) ? $details['sql']['type'] : $details['type'])).($size ? '('.$size.')' : '').' '.
-						(!$details['sql']['nullable'] ? 'NOT NULL ' : '');
-			if(isset($details['key']) && $details['key'] === 'primary') {
-				$request .= 'AUTO_INCREMENT PRIMARY KEY';
-			}
-			$i++;
-			if($i < $max) {
-				$request .= ',';
+				$request .= $field.' '.strtoupper((isset($details['sql']['type']) ? $details['sql']['type'] : $details['type'])).($size ? '('.$size.')' : '').' '.
+							(!$details['sql']['nullable'] ? 'NOT NULL ' : '');
+				if (isset($details['key']) && $details['key'] === 'primary') {
+					$request .= 'AUTO_INCREMENT PRIMARY KEY';
+				}
+				$i++;
+				if ($i < $max) {
+					$request .= ',';
+				}
 			}
 		}
 		$request .= ')';
+		return $this->get_mysql()->query($request);
+	}
+
+	/**
+	 * @return bool
+	 */
+	public function remove_table() {
+		$request = 'DROP TABLE '.$this->get_table_name();
 		return $this->get_mysql()->query($request);
 	}
 
@@ -82,6 +86,52 @@ class Entity extends Base {
 	 * @throws ReflectionException
 	 */
 	private function init_fields() {
+		$annotations = [
+			'@JsonExclude' => function(ReflectionProperty $prop) {
+				$this->fields[$prop->getName()]['json_exclude'] = true;
+			},
+			'@primary' => function(ReflectionProperty $prop) {
+				$this->primary_key                     = $prop->getName();
+				$this->fields[$prop->getName()]['key'] = 'primary';
+			},
+			'@var ' => function(ReflectionProperty $prop, string $doc_line) {
+				$this->fields[$prop->getName()]['type'] = explode(' ', $doc_line)[1];
+				if (explode(' ', $doc_line)[1] === 'bool') {
+					$this->fields[$prop->getName()]['sql']['type'] = 'boolean';
+				}
+//				if(strstr($doc_line, '[]')) {
+//					$champ = explode(' ', $doc_line)[2];
+//					$table = explode('_', $champ);
+//
+//					$this->fields[$prop->getName()]['dao'] = [
+//						'table' => strtolower(str_replace('Entity', '', explode(' ', $doc_line)[1])),
+//						'searchBy' => explode('_', $prop->getName())[1],
+//					];
+//				}
+			},
+			'@text' => function(ReflectionProperty $prop) {
+				$this->fields[$prop->getName()]['sql']['type'] = 'TEXT';
+			},
+			'@size' => function(ReflectionProperty $prop, string $doc_line) {
+				if($this->fields[$prop->getName()]['type'] !== 'int' && $this->fields[$prop->getName()]['type'] !== 'float') {
+					$this->fields[$prop->getName()]['sql']['type'] = 'VARCHAR';
+					$this->fields[$prop->getName()]['sql']['size'] = (int)str_replace(['@size(', ')'], '', $doc_line);
+				}
+			},
+			'@not_null' => function(ReflectionProperty $prop) {
+				$this->fields[$prop->getName()]['sql']['nullable'] = false;
+			},
+			'@entity ' => function(ReflectionProperty $prop, string $doc_line) {
+				$this->fields[$prop->getName()]['entity'] = [
+					'table' => strtolower(str_replace('Entity', '', explode(' ', $doc_line)[1])),
+					'searchBy' => explode('_', $prop->getName())[1],
+				];
+			},
+			'@not_in_table' => function(ReflectionProperty $prop) {
+				$this->fields[$prop->getName()]['in_table'] = false;
+			}
+		];
+
 		$ref = new ReflectionClass(get_class($this));
 		$props = $ref->getProperties();
 		foreach ($props as $prop) {
@@ -101,34 +151,10 @@ class Entity extends Base {
 				$this->fields[$prop->getName()]['sql']['nullable'] = true;
 				foreach ($doc_comment as $doc_line) {
 					if($doc_line !== '') {
-						if(strstr($doc_line, '@JsonExclude')) {
-							$this->fields[$prop->getName()]['json_exclude'] = true;
-						}
-						if (strstr($doc_line, '@primary')) {
-							$this->primary_key                     = $prop->getName();
-							$this->fields[$prop->getName()]['key'] = 'primary';
-						}
-						if (strstr($doc_line, '@var ') !== false) {
-							$this->fields[$prop->getName()]['type'] = explode(' ', $doc_line)[1];
-							if (explode(' ', $doc_line)[1] === 'bool') {
-								$this->fields[$prop->getName()]['sql']['type'] = 'boolean';
+						foreach ($annotations as $annotation => $callback) {
+							if(strstr($doc_line, $annotation)) {
+								$callback($prop, $doc_line);
 							}
-						}
-						if (strstr($doc_line, '@text')) {
-							$this->fields[$prop->getName()]['sql']['type'] = 'TEXT';
-						}
-						if (strstr($doc_line, '@size') && $this->fields[$prop->getName()]['type'] !== 'int' && $this->fields[$prop->getName()]['type'] !== 'float') {
-							$this->fields[$prop->getName()]['sql']['type'] = 'VARCHAR';
-							$this->fields[$prop->getName()]['sql']['size'] = (int)str_replace(['@size(', ')'], '', $doc_line);
-						}
-						if (strstr($doc_line, '@not_null')) {
-							$this->fields[$prop->getName()]['sql']['nullable'] = false;
-						}
-						if(strstr($doc_line, '@entity ')) {
-							$this->fields[$prop->getName()]['entity'] = [
-								'table' => strtolower(str_replace('Entity', '', explode(' ', $doc_line)[1])),
-								'searchBy' => explode('_', $prop->getName())[1],
-							];
 						}
 					}
 				}
@@ -175,12 +201,8 @@ class Entity extends Base {
 	 * @throws Exception
 	 */
 	public function save($exists = true) {
-		$prefix = '';
-		if($this->mysql_conf->has_property('table-prefix')) {
-			$prefix = $this->mysql_conf->get('table-prefix');
-		}
 		if($exists) {
-			$request = 'UPDATE '.$prefix.$this->table_name.' SET ';
+			$request = 'UPDATE '.$this->get_table_name().' SET ';
 			$i = 0;
 			foreach ($this->get_fields(['id']) as $field => $details) {
 				if ($i > 0) {
@@ -200,7 +222,7 @@ class Entity extends Base {
 			$request .= 'WHERE `id`='.$this->get('id');
 		}
 		else {
-			$request = 'INSERT INTO '.$prefix.$this->table_name.' SET ';
+			$request = 'INSERT INTO '.$this->get_table_name().' SET ';
 			$i = 0;
 			foreach ($this->get_fields(['id']) as $field => $details) {
 				if ($i > 0) {
@@ -224,7 +246,7 @@ class Entity extends Base {
 		}
 		$result = $this->get_mysql()->query($request);
 		if(!$exists) {
-			$req = $this->get_mysql()->query('SELECT '.$this->get_primary_key().' FROM '.$prefix.$this->table_name.' ORDER BY '.$this->get_primary_key().' DESC LIMIT 1');
+			$req = $this->get_mysql()->query('SELECT '.$this->get_primary_key().' FROM '.$this->get_table_name().' ORDER BY '.$this->get_primary_key().' DESC LIMIT 1');
 			while (list($id) = $req->fetch_array()) {
 				$id = (int)$id;
 				$this->set('id', $id);
@@ -233,12 +255,24 @@ class Entity extends Base {
 		return $result ? $this : false;
 	}
 
-	public function delete() {
+	protected function get_table_name($for_insert = true) {
 		$prefix = '';
 		if($this->mysql_conf->has_property('table-prefix')) {
 			$prefix = $this->mysql_conf->get('table-prefix');
 		}
-		$this->get_mysql()->query('DELETE FROM '.$prefix.$this->table_name.' WHERE `id`='.$this->get('id'));
+		$table_name = '';
+		if($for_insert) {
+			$table_name .= '`';
+		}
+		$table_name .= $prefix.$this->table_name;
+		if($for_insert) {
+			$table_name .= '`';
+		}
+		return $table_name;
+	}
+
+	public function delete() {
+		$this->get_mysql()->query('DELETE FROM '.$this->get_table_name().' WHERE `id`='.$this->get('id'));
 	}
 
 	/**
@@ -282,7 +316,7 @@ class Entity extends Base {
 				$entity = $this->get($field);
 				$value = $entity->get($details['entity']['searchBy']);
 			}
-			if(!isset($details['json_exclude'])) {
+			if(!isset($details['json_exclude']) || $details['json_exclude'] === false) {
 				$array[$field] = $value;
 			}
 			if($details['type'] === 'int') {

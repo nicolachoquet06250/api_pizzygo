@@ -40,11 +40,7 @@ class Repository extends Base {
 	 * @throws Exception
 	 */
 	public function getAll() {
-		$prefix = '';
-		if($this->mysql_conf->has_property('table-prefix')) {
-			$prefix = $this->mysql_conf->get('table-prefix');
-		}
-		$query = $this->get_mysql()->query('SELECT * FROM '.$prefix.$this->table_name);
+		$query = $this->get_mysql()->query('SELECT * FROM '.$this->get_table_name());
 		$entities = [];
 		$entity_class = $this->entity_class;
 		while ($entity = $query->fetch_assoc()) {
@@ -64,11 +60,7 @@ class Repository extends Base {
 	 * @throws Exception
 	 */
 	public function getAllDesc() {
-		$prefix = '';
-		if($this->mysql_conf->has_property('table-prefix')) {
-			$prefix = $this->mysql_conf->get('table-prefix');
-		}
-		$query = $this->get_mysql()->query('SELECT * FROM '.$prefix.$this->table_name.' ORDER BY `id` DESC');
+		$query = $this->get_mysql()->query('SELECT * FROM '.$this->get_table_name().' ORDER BY `id` DESC');
 		$entities = [];
 		$entity_class = $this->entity_class;
 		while ($entity = $query->fetch_assoc()) {
@@ -88,11 +80,7 @@ class Repository extends Base {
 	 * @throws Exception
 	 */
 	public function getAllAsc() {
-		$prefix = '';
-		if($this->mysql_conf->has_property('table-prefix')) {
-			$prefix = $this->mysql_conf->get('table-prefix');
-		}
-		$query = $this->get_mysql()->query('SELECT * FROM '.$prefix.$this->table_name.' ORDER BY `id` ASC');
+		$query = $this->get_mysql()->query('SELECT * FROM '.$this->get_table_name().' ORDER BY `id` ASC');
 		$entities = [];
 		$entity_class = $this->entity_class;
 		while ($entity = $query->fetch_assoc()) {
@@ -114,12 +102,8 @@ class Repository extends Base {
 	 * @throws Exception
 	 */
 	public function getBy($field, $value) {
-		$prefix = '';
-		if($this->mysql_conf->has_property('table-prefix')) {
-			$prefix = $this->mysql_conf->get('table-prefix');
-		}
 		$query = $this->get_mysql()
-					  ->query('SELECT * FROM '.$prefix.$this->table_name.' WHERE `'.$field.'`='
+					  ->query('SELECT * FROM '.$this->get_table_name().' WHERE `'.$field.'`='
 							  .(gettype($value) === 'string' ? '"'.$value.'"' : $value));
 		$entities = [];
 		$entity_class = $this->entity_class;
@@ -189,5 +173,21 @@ class Repository extends Base {
 			return false;
 		}
 		return true;
+	}
+
+	protected function get_table_name($for_insert = true) {
+		$prefix = '';
+		if($this->mysql_conf->has_property('table-prefix')) {
+			$prefix = $this->mysql_conf->get('table-prefix');
+		}
+		$table_name = '';
+		if($for_insert) {
+			$table_name .= '`';
+		}
+		$table_name .= $prefix.$this->table_name;
+		if($for_insert) {
+			$table_name .= '`';
+		}
+		return $table_name;
 	}
 }

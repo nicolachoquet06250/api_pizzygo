@@ -15,10 +15,13 @@ class LoginController extends Controller {
 	public function login() {
 		/** @var LoginModel $model */
 		$model = $this->get_model('login');
-		$user = $model->login($this->post('email'), $this->post('password'));
+		$user = $model->login($this->get('email'), $this->get('password'));
 		if($user) {
 			if (is_object($user) && $model->register_session($user)) {
-				return $user->toArrayForJson();
+				return [
+					'status' => true,
+					'user' => $user->toArrayForJson(),
+				];
 			}
 		}
 		return $user;
@@ -55,6 +58,12 @@ class LoginController extends Controller {
 	public function logged_user() {
 		/** @var SessionService $session_service */
 		$session_service = $this->get_service('session');
-		return $session_service->get('user');
+
+		return $session_service->has_key('user') ? [
+			'status' => true,
+			'user' => $session_service->get('user')
+		] : [
+			'status' => false
+		];
 	}
 }

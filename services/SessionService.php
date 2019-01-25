@@ -3,6 +3,9 @@ session_start();
 
 class SessionService extends Service {
 
+	/**
+	 * @throws Exception
+	 */
 	public function initialize_after_injection() {}
 
 	/**
@@ -18,10 +21,32 @@ class SessionService extends Service {
 	 * @return mixed|null
 	 */
 	public function get(string $key) {
-		return $this->has_key($_SESSION[$key]) ? $_SESSION[$key] : null;
+		return $this->has_key($key) ? $_SESSION[$key] : null;
 	}
 
 	/**
+	 * @param null $session_id
+	 * @return string|void
+	 */
+	public function id($session_id = null) {
+		if(is_null($session_id)) {
+			return session_id();
+		}
+		session_id($session_id);
+	}
+
+	/**
+	 * @param null $session_name
+	 * @return string|void
+	 */
+	public function name($session_name = null) {
+		if(is_null($session_name)) {
+			return session_name();
+		}
+		session_name($session_name);
+	}
+
+ 	/**
 	 * @param string $key
 	 */
 	public function remove(string $key) {

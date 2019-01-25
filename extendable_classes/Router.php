@@ -24,7 +24,11 @@ class Router extends Base {
 	 */
 	public static function create(string $uri, callable $callback, callable $catch) {
 		try {
-			if(substr($uri, 0, strlen('/index.php')) === '/index.php') {
+			$current_dir = basename(realpath(__DIR__.'/../'));
+			if (substr($uri, 0, strlen('/'.$current_dir.'/index.php')) === '/'.$current_dir.'/index.php') {
+				$uri = str_replace('/'.$current_dir.'/index.php', '', $uri);
+			}
+			elseif(substr($uri, 0, strlen('/index.php')) === '/index.php') {
 				$uri = str_replace('/index.php', '', $uri);
 			}
 			$router = new Router($uri);

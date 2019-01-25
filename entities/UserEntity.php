@@ -86,4 +86,31 @@ class UserEntity extends Entity {
 	public function isPremium() {
 		return $this->premium;
 	}
+
+	/**
+	 * @throws Exception
+	 */
+	public function get_roles() {
+		$roles = [];
+		if(!is_null($this->get('id'))) {
+			/** @var RoleDao $dao */
+			$dao = $this->get_dao('role');
+			$roles = $dao->getBy('user_id', $this->get('id'));
+			/** @var RoleEntity $role */
+			foreach ($roles as $i => $role) {
+				$roles[$i] = $role->toArrayForJson();
+			}
+		}
+		return $roles;
+	}
+
+	/**
+	 * @return array
+	 * @throws Exception
+	 */
+	public function toArrayForJson() {
+		$user = parent::toArrayForJson();
+		$user['roles'] = $this->get_roles();
+		return $user;
+	}
 }

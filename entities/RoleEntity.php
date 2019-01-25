@@ -18,6 +18,7 @@ class RoleEntity extends Entity {
 	 * @not_null
 	 * @size(11)
 	 * @entity UserEntity
+	 * @JsonExclude
 	 */
 	protected $user_id = 0;
 }
