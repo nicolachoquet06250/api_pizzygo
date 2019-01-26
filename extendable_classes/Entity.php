@@ -99,15 +99,6 @@ class Entity extends Base {
 				if (explode(' ', $doc_line)[1] === 'bool') {
 					$this->fields[$prop->getName()]['sql']['type'] = 'boolean';
 				}
-//				if(strstr($doc_line, '[]')) {
-//					$champ = explode(' ', $doc_line)[2];
-//					$table = explode('_', $champ);
-//
-//					$this->fields[$prop->getName()]['dao'] = [
-//						'table' => strtolower(str_replace('Entity', '', explode(' ', $doc_line)[1])),
-//						'searchBy' => explode('_', $prop->getName())[1],
-//					];
-//				}
 			},
 			'@text' => function(ReflectionProperty $prop) {
 				$this->fields[$prop->getName()]['sql']['type'] = 'TEXT';

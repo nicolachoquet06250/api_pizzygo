@@ -45,4 +45,8 @@ class cmd extends Base {
 	protected function get_mysql() {
 		return $this->mysql;
 	}
+
+	protected function has_arg($key) {
+		return isset($this->args[$key]);
+	}
 }
