@@ -1,19 +1,5 @@
 <?php
 
-class workerThread extends Thread {
-	private $i;
-	public function __construct($i){
-		$this->i = $i;
-	}
-
-	public function run(){
-		while(true){
-			echo $this->i;
-			sleep(1);
-		}
-	}
-}
-
 class help extends cmd {
 	protected function index() {
 		echo " ## HELP FOR COMMANDS ##\n";
@@ -109,10 +95,44 @@ class help extends cmd {
 	}
 
 	protected function threads() {
-		for($i = 0; $i < 50; $i++) {
-			/** @var workerThread[] $workers */
-			$workers[$i] = new workerThread($i);
-			$workers[$i]->start();
+		if (function_exists('pcntl_fork')) {
+
+			for ($x = 1; $x < 5; $x++) {
+				switch ($pid = pcntl_fork()) {
+					case -1:
+						// @fail
+						die('Fork failed');
+						break;
+
+					case 0:
+						// @child: Include() misbehaving code here
+						print "FORK: Child #{$x} preparing to nuke...\n";
+						generate_fatal_error(); // Undefined function
+						break;
+
+					default:
+						// @parent
+						print "FORK: Parent, letting the child run amok...\n";
+						pcntl_waitpid($pid, $status);
+						break;
+				}
+			}
+			print "Done! :^)\n\n";
 		}
+	}
+
+	/**
+	 * @throws Exception
+	 */
+	protected function test_user_dao() {
+		/** @var UserDao $user_dao */
+		$user_dao = $this->get_dao('user');
+		$user = $user_dao->getId_Name_Surname_Email_DescriptionByEmailAndPassword($this->get_arg('email'), sha1(sha1($this->get_arg('password'))));
+		if(is_array($user)) {
+			foreach ($user as $i => $_user)
+				$user[$i] = $_user->toArrayForJson();
+			return $user;
+		}
+		else return $user->toArrayForJson();
 	}
 }

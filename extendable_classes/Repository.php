@@ -175,6 +175,10 @@ class Repository extends Base {
 		return true;
 	}
 
+	/**
+	 * @param bool $for_insert
+	 * @return string
+	 */
 	protected function get_table_name($for_insert = true) {
 		$prefix = '';
 		if($this->mysql_conf->has_property('table-prefix')) {
@@ -191,7 +195,11 @@ class Repository extends Base {
 		return $table_name;
 	}
 
-	private function colums_exists($column) {
+	/**
+	 * @param string $column
+	 * @return bool
+	 */
+	private function column_exists(string $column) {
 		$query = $this->get_mysql()->query('SHOW COLUMNS FROM '.$this->get_table_name());
 		while (list($field,,,,) = $query->fetch_array()) {
 			if($column === $field) {
@@ -260,6 +268,12 @@ class Repository extends Base {
 
 				$matches[0] = strtolower($matches[0]);
 				$fields_selected = explode('_', $matches[0]);
+				$_field_selected = [];
+				foreach ($fields_selected as $i => $field_selected) {
+					if($this->column_exists($field_selected))
+						$_field_selected[] = $field_selected;
+				}
+				$fields_selected = $_field_selected;
 
 				$_matches = [];
 				unset($matches[0]);
@@ -317,7 +331,13 @@ class Repository extends Base {
 					return false;
 				}
 				return $result;
-			}
+			},
+			'`delete([A-Za-z0-9\_]+)Where([A-Za-z0-9\_]+)`' => function($matches, &$arguments) {
+				// TODO: create method code here
+			},
+			'`update([A-Za-z0-9\_]+)Where([A-Za-z0-9\_]+)`' => function($matches, &$arguments) {
+				// TODO: create method code here
+			},
 		];
 
 		$exists = false;
@@ -332,42 +352,23 @@ class Repository extends Base {
 			];
 			break;
 		}
-		//		if(substr($name, 0, strlen('getFrom')) === 'getFrom') {
-		//			$champ = substr($name, strlen('getFrom'));
-		//			if(strstr($champ, 'And')) {
-		//				$champ = explode('And', $champ);
-		//				foreach ($champ as $i => $_champ) {
-		//					unset($champ[$i]);
-		//					$champ[strtolower($_champ)] = $arguments[$i];
-		//				}
-		//			}
-		//			else {
-		//				$champ = strtolower($champ);
-		//			}
-		////			return $this->getFrom($champ, $arguments[0]);
-		//			var_dump('getFrom', $champ);
-		//		}
-		if($exists) {
-			return $exists['callback']($exists['matches'], $arguments);
-		}
-		else {
-			if(in_array($name, get_class_methods(get_class($this)))) {
-				$params = '';
-				$i = 0;
-				foreach ($arguments as $argument) {
-					if(is_string($argument)) {
-						$params .= '"'.$argument.'"';
-					}
-					elseif (is_numeric($argument)) {
-						$params .= $argument;
-					}
-					elseif (is_object($argument)) {
-						$params .= '$arguments['.$i.']';
-					}
-					$i++;
+		if($exists) return $exists['callback']($exists['matches'], $arguments);
+		else if(in_array($name, get_class_methods(get_class($this)))) {
+			$params = '';
+			$i = 0;
+			foreach ($arguments as $argument) {
+				if(is_string($argument)) {
+					$params .= '"'.$argument.'"';
 				}
-				return eval("$this->$name($params);");
+				elseif (is_numeric($argument)) {
+					$params .= $argument;
+				}
+				elseif (is_object($argument)) {
+					$params .= '$arguments['.$i.']';
+				}
+				$i++;
 			}
+			return eval("$this->$name($params);");
 		}
 		return [];
 	}
