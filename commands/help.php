@@ -1,5 +1,19 @@
 <?php
 
+class workerThread extends Thread {
+	private $i;
+	public function __construct($i){
+		$this->i = $i;
+	}
+
+	public function run(){
+		while(true){
+			echo $this->i;
+			sleep(1);
+		}
+	}
+}
+
 class help extends cmd {
 	protected function index() {
 		echo " ## HELP FOR COMMANDS ##\n";
@@ -82,7 +96,7 @@ class help extends cmd {
 	/**
 	 * @throws Exception
 	 */
-	protected function get_by_user_id() {
+	protected function get_roles_by_user_id() {
 		/** @var RoleDao $dao */
 		$dao = $this->get_dao('role');
 		/** @var RoleEntity $roles */
@@ -92,5 +106,13 @@ class help extends cmd {
 			$roles[$i] = $role->toArrayForJson();
 		}
 		return $roles;
+	}
+
+	protected function threads() {
+		for($i = 0; $i < 50; $i++) {
+			/** @var workerThread[] $workers */
+			$workers[$i] = new workerThread($i);
+			$workers[$i]->start();
+		}
 	}
 }
