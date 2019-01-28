@@ -190,4 +190,185 @@ class Repository extends Base {
 		}
 		return $table_name;
 	}
+
+	private function colums_exists($column) {
+		$query = $this->get_mysql()->query('SHOW COLUMNS FROM '.$this->get_table_name());
+		while (list($field,,,,) = $query->fetch_array()) {
+			if($column === $field) {
+				return true;
+			}
+		}
+		return false;
+	}
+
+	public function __call($name, $arguments) {
+		$regexs = [
+			'`getBy([A-Z][a-z0-9]+)(And|Or)([A-Z][a-z0-9]+)+`' => function($matches, &$arguments) {
+				$array = [];
+				$_matches = [];
+				unset($matches[0]);
+				foreach ($matches as $item) {
+					$_matches[] = $item;
+				}
+				$matches = $_matches;
+
+				$i = 0;
+				$j = 0;
+				foreach ($matches as $match) {
+					if($match !== 'And' && $match !== 'Or') {
+						$array[strtolower($match)] = [
+							'value' => $arguments[$i],
+							'operator' => (isset($matches[$j+1]) && ($matches[$j+1] === 'And' || $matches[$j+1] === 'Or') ? strtoupper($matches[$j+1]) : null),
+						];
+						$i++;
+					}
+					$j++;
+				}
+				$request = 'SELECT * FROM '.$this->get_table_name().' WHERE ';
+				foreach ($array as $field => $detail) {
+					$request .= $field.'='.(is_string($detail['value']) ? '"'.$detail['value'].'"' : $detail['value']).' ';
+					if(!is_null($detail['operator'])) {
+						$request .= $detail['operator'].' ';
+					}
+				}
+				$query = $this->get_mysql()->query($request);
+				$result = [];
+				while ($data = $query->fetch_assoc()) {
+					$local = [];
+					foreach ($this->get_entity($this->table_name)->get_fields() as $field => $detail) {
+						$local[$field] = $data[$field];
+					}
+					$result[] = $this->get_entity($this->table_name)
+									 ->initFromArray($local);
+				}
+				if(count($result) === 1) {
+					$result = $result[0];
+				}
+				elseif (count($result) === 0) {
+					return false;
+				}
+				return $result;
+			},
+			'`get([A-Za-z0-9\_]+)By([A-Z][a-z0-9]+)(And|Or)([A-Z][a-z0-9]+)+`' => function($matches, &$arguments) {
+
+				$_matches = [];
+				unset($matches[0]);
+				foreach ($matches as $item) {
+					$_matches[] = $item;
+				}
+				$matches = $_matches;
+
+				$matches[0] = strtolower($matches[0]);
+				$fields_selected = explode('_', $matches[0]);
+
+				$_matches = [];
+				unset($matches[0]);
+				foreach ($matches as $item) {
+					$_matches[] = $item;
+				}
+				$matches = $_matches;
+
+				$array = [];
+				$i = 0;
+				$j = 0;
+				foreach ($matches as $match) {
+					if($match !== 'And' && $match !== 'Or') {
+						$array[strtolower($match)] = [
+							'value' => $arguments[$i],
+							'operator' => (isset($matches[$j+1]) && ($matches[$j+1] === 'And' || $matches[$j+1] === 'Or') ? strtoupper($matches[$j+1]) : null),
+						];
+						$i++;
+					}
+					$j++;
+				}
+				$request = 'SELECT `'.implode('`, `', $fields_selected).'` FROM '.$this->get_table_name().' WHERE ';
+				foreach ($array as $field => $detail) {
+					$request .= $field.'='.(is_string($detail['value']) ? '"'.$detail['value'].'"' : $detail['value']).' ';
+					if(!is_null($detail['operator'])) {
+						$request .= $detail['operator'].' ';
+					}
+				}
+
+				$query = $this->get_mysql()->query($request);
+				$result = [];
+				while ($data = $query->fetch_assoc()) {
+					$local = [];
+					foreach ($this->get_entity($this->table_name)->get_fields() as $field => $detail) {
+						if(isset($data[$field])) {
+							$local[$field] = $data[$field];
+						}
+					}
+					if(count($local) < $this->get_entity($this->table_name)->get_fields()) {
+						$entity = $this->get_entity($this->table_name);
+						foreach ($local as $field => $value) {
+							$entity->set($field, $value);
+						}
+					}
+					else {
+						$entity = $this->get_entity($this->table_name)
+										 ->initFromArray($local);
+					}
+					$result[] = $entity;
+				}
+				if(count($result) === 1) {
+					$result = $result[0];
+				}
+				elseif (count($result) === 0) {
+					return false;
+				}
+				return $result;
+			}
+		];
+
+		$exists = false;
+		foreach ($regexs as $regex => $callback) {
+			preg_match($regex, $name, $matches);
+			if(empty($matches)) {
+				continue;
+			}
+			$exists = [
+				'callback' => $callback,
+				'matches' => $matches,
+			];
+			break;
+		}
+		//		if(substr($name, 0, strlen('getFrom')) === 'getFrom') {
+		//			$champ = substr($name, strlen('getFrom'));
+		//			if(strstr($champ, 'And')) {
+		//				$champ = explode('And', $champ);
+		//				foreach ($champ as $i => $_champ) {
+		//					unset($champ[$i]);
+		//					$champ[strtolower($_champ)] = $arguments[$i];
+		//				}
+		//			}
+		//			else {
+		//				$champ = strtolower($champ);
+		//			}
+		////			return $this->getFrom($champ, $arguments[0]);
+		//			var_dump('getFrom', $champ);
+		//		}
+		if($exists) {
+			return $exists['callback']($exists['matches'], $arguments);
+		}
+		else {
+			if(in_array($name, get_class_methods(get_class($this)))) {
+				$params = '';
+				$i = 0;
+				foreach ($arguments as $argument) {
+					if(is_string($argument)) {
+						$params .= '"'.$argument.'"';
+					}
+					elseif (is_numeric($argument)) {
+						$params .= $argument;
+					}
+					elseif (is_object($argument)) {
+						$params .= '$arguments['.$i.']';
+					}
+					$i++;
+				}
+				return eval("$this->$name($params);");
+			}
+		}
+		return [];
+	}
 }
