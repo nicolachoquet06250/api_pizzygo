@@ -94,31 +94,42 @@ class help extends cmd {
 		return $roles;
 	}
 
-	protected function threads() {
+	protected function forks() {
 		if (function_exists('pcntl_fork')) {
+			function execute_task($task_id) {
+				echo "Starting task: ${task_id}\n";
+				// Simulate doing actual work with sleep().
+				$execution_time = rand(5, 10);
+				sleep($execution_time);
+				echo "Completed task: ${task_id}. Took ${execution_time} seconds.\n";
+			}
 
-			for ($x = 1; $x < 5; $x++) {
-				switch ($pid = pcntl_fork()) {
-					case -1:
-						// @fail
-						die('Fork failed');
-						break;
-
-					case 0:
-						// @child: Include() misbehaving code here
-						print "FORK: Child #{$x} preparing to nuke...\n";
-						generate_fatal_error(); // Undefined function
-						break;
-
-					default:
-						// @parent
-						print "FORK: Parent, letting the child run amok...\n";
-						pcntl_waitpid($pid, $status);
-						break;
+			$tasks = [
+				"fetch_remote_data",
+				"post_async_updates",
+				"clear_caches",
+				"notify_admin",
+			];
+			foreach ($tasks as $task) {
+				$pid = pcntl_fork();
+				if ($pid == -1) {
+					exit("Error forking...\n");
+				}
+				else if ($pid == 0) {
+					execute_task($task);
+					exit();
 				}
 			}
-			print "Done! :^)\n\n";
+			while(pcntl_waitpid(0, $status) != -1);
+			echo "Do stuff after all parallel execution is complete.\n";
 		}
+	}
+
+	/**
+	 * @throws Exception
+	 */
+	protected function threads() {
+		($this->get_thread('main'))->start();
 	}
 
 	/**

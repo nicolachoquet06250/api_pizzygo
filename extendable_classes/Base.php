@@ -117,6 +117,22 @@ class Base {
 		}
 	}
 
+	/**
+	 * @param string $thread
+	 * @return Threadable
+	 * @throws Exception
+	 */
+	protected function get_thread(string $thread) {
+		$thread = ucfirst($thread).'Thread';
+		if(file_exists(__DIR__.'/../threads/'.$thread.'.php')) {
+			require_once __DIR__.'/../threads/'.$thread.'.php';
+			return new $thread();
+		}
+		else {
+			throw new Exception('\'La classe '.$thread.' n\'existe pas !');
+		}
+	}
+
 	public function toArrayForJson() {
 		return [];
 	}
