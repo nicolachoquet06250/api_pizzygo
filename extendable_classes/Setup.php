@@ -43,6 +43,7 @@ class Setup extends Base {
 		/** @var Controller $ctrl */
 		$ctrl = new $controller($action, $parzms);
 		$run = $ctrl->run();
-		return $this->json_service->encode($run);
+		var_dump($run);
+		return $run;
 	}
 }

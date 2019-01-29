@@ -3,13 +3,15 @@
 class TestController extends Controller {
 
 	/**
-	 * @return array
+	 * @return Response
+	 * @throws Exception
 	 */
 	protected function index() {
-		return [];
+		return $this->get_response([]);
 	}
 
 	/**
+	 * @return Response
 	 * @throws Exception
 	 */
 	public function get_user() {
@@ -17,8 +19,9 @@ class TestController extends Controller {
 		$user_dao = $this->get_dao('user');
 		$email = $this->get('email');
 		$password = $this->get('password');
-//		return $user_dao->getId_Name_SurnameByEmailAndPassword($email, sha1(sha1($password)));
-//		return $user_dao->getId_Name_Surname_Email_DescriptionByEmailAndPassword($email, sha1(sha1($password)));
-		return $user_dao->getByEmailAndPassword($email, sha1(sha1($password)))->toArrayForJson();
+//		$user = $user_dao->getId_Name_SurnameByEmailAndPassword($email, sha1(sha1($password)));
+//		$user = $user_dao->getId_Name_Surname_Email_DescriptionByEmailAndPassword($email, sha1(sha1($password)));
+		$user = $user_dao->getByEmailAndPassword($email, sha1(sha1($password)))->toArrayForJson();
+		return $this->get_response($user);
 	}
 }

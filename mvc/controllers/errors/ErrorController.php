@@ -6,20 +6,31 @@ class ErrorController extends Controller {
 
 	/**
 	 * @inheritdoc
+	 * @throws Exception
 	 */
 	protected function index() {
 		header('HTTP/1.0 '.$this->code.' '.$this->message);
-		return [
-			'code' => $this->code,
-			'message' => $this->message,
-		];
+		return $this->get_response(
+			[
+				'code' => $this->code,
+				'message' => $this->message,
+			]
+		);
 	}
 
+	/**
+	 * @return Response
+	 * @throws Exception
+	 */
 	protected function _404() {
 		$this->code(404);
 		return $this->index();
 	}
 
+	/**
+	 * @return Response
+	 * @throws Exception
+	 */
 	protected function _500() {
 		$this->code(500);
 		return $this->index();
@@ -44,7 +55,7 @@ class ErrorController extends Controller {
 	}
 
 	/**
-	 * @return array
+	 * @return string
 	 */
 	public function display() {
 		return $this->run();

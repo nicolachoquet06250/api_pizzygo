@@ -3,9 +3,10 @@
 	class OrderController extends Controller {
 
 		/**
-		 * @return array
+		 * @return Response
+		 * @throws Exception
 		 */
 		protected function index() {
-			return [];
+			return $this->get_response([]);
 		}
 	}

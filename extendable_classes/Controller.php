@@ -29,19 +29,22 @@ abstract class Controller extends Base {
 	}
 
 	/**
-	 * @return array
+	 * @return Response
 	 */
 	abstract protected function index();
 
 	/**
-	 * @return array
+	 * @return string
 	 */
 	public function run() {
 		$method = $this->method;
 		if($this->http_error) {
 			return $this->http_error->display();
 		}
-		return $this->$method();
+		/** @var Response $response */
+		$response = $this->$method();
+		var_dump($response->display());
+		return $response->display();
 	}
 
 	/**

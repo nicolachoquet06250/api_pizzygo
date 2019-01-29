@@ -27,9 +27,6 @@ class RegisterController extends Controller {
 			}
 		}
 		$user = $model->register_user($infos);
-		if(is_array($user)) {
-			return $user;
-		}
-		return $user->toArrayForJson();
+		return $this->get_response($user);
 	}
 }

@@ -10,17 +10,19 @@ class HomeController extends Controller {
 	}
 
 	/**
-	 * @return array
+	 * @return Response
 	 * @throws Exception
 	 */
 	protected function home() {
 		/** @var HttpService $http_service */
 		$http_service = $this->get_service('http');
-		return [
-			'controller' => 'home',
-			'get' => $http_service->get(),
-			'session' => $http_service->session(),
-			'server' => $_SERVER['SERVER_SOFTWARE'],
-		];
+		return $this->get_response(
+			[
+				'controller' => 'home',
+				'get' => $http_service->get(),
+				'session' => $http_service->session(),
+				'server' => $_SERVER['SERVER_SOFTWARE'],
+			]
+		);
 	}
 }

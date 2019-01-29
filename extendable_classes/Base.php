@@ -133,6 +133,16 @@ class Base {
 		}
 	}
 
+	/**
+	 * @param string $type
+	 * @param mixed $object
+	 * @return Response
+	 * @throws Exception
+	 */
+	protected function get_response($object, $type = Response::JSON) {
+		return Response::create($object, $type);
+	}
+
 	public function toArrayForJson() {
 		return [];
 	}
