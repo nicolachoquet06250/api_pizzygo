@@ -47,7 +47,7 @@ class Response extends Base {
 					/** @var Base $elem */
 					$element[$key] = $elem->toArrayForJson();
 				}
-				elseif (is_string($elem) || is_numeric($elem) || is_array($elem)) {
+				if (is_string($elem) || is_numeric($elem) || is_array($elem) || is_bool($elem)) {
 					$element[$key] = $elem;
 				}
 			}
@@ -67,8 +67,7 @@ class Response extends Base {
 			$_element = $this->element;
 			$element = $_element->toArrayForJson();
 		}
-
-		$this->element = json_encode($element);
+		$this->parsed_element = json_encode($element);
 	}
 
 	public function display() {

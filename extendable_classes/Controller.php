@@ -43,7 +43,6 @@ abstract class Controller extends Base {
 		}
 		/** @var Response $response */
 		$response = $this->$method();
-		var_dump($response->display());
 		return $response->display();
 	}
 

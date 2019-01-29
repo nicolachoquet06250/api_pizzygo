@@ -43,7 +43,6 @@ class Setup extends Base {
 		/** @var Controller $ctrl */
 		$ctrl = new $controller($action, $parzms);
 		$run = $ctrl->run();
-		var_dump($run);
 		return $run;
 	}
 }

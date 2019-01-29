@@ -7,7 +7,6 @@ echo Router::create($_SERVER['REQUEST_URI'],
 	function (string $controller) {
 		$setup = new Setup($controller);
 		$run = $setup->run();
-		var_dump($run);
 		return $run;
 	},
 	function (Exception $e, JsonService $json_service) {

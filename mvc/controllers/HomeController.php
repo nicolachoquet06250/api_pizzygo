@@ -3,6 +3,7 @@
 class HomeController extends Controller {
 	/**
 	 * @inheritdoc
+	 * @alias_method home
 	 * @throws Exception
 	 */
 	protected function index() {

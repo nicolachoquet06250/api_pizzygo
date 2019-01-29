@@ -24,10 +24,10 @@ class generate extends cmd {
 	class '.ucfirst($name).'Controller extends Controller {
 
 		/**
-		 * @return array
+		 * @return Response
 		 */
 		protected function index() {
-			return [];
+			return $this->get_response([]);
 		}
 	}';
 
@@ -41,6 +41,11 @@ class generate extends cmd {
 		if($this->os_service->IAmOnUnixSystem()) {
 			exec('git add '.__DIR__.'/../mvc/controllers/'.ucfirst($name).'Controller.php');
 			exec('git add '.__DIR__.'/../mvc/models/'.ucfirst($name).'Model.php');
+			$return .= "\nLe model et le controlleur $name ont bien été ajoutés à GIT !!";
+		}
+		else {
+			exec('"c:\Program Files\Git\bin\git.exe" add '.__DIR__.'/../mvc/controllers/'.ucfirst($name).'Controller.php');
+			exec('"c:\Program Files\Git\bin\git.exe" add '.__DIR__.'/../mvc/models/'.ucfirst($name).'Model.php');
 			$return .= "\nLe model et le controlleur $name ont bien été ajoutés à GIT !!";
 		}
 		return $return;
@@ -63,6 +68,10 @@ class generate extends cmd {
 		$return .= 'La commande '.$name.' à bien été créée !!';
 		if($this->os_service->IAmOnUnixSystem()) {
 			exec('git add '.__DIR__.'/'.$name.'.php');
+			$return .= "\nLa commande $name à bien été ajoutée à GIT !!";
+		}
+		else {
+			exec('"c:\Program Files\Git\bin\git.exe" add '.__DIR__.'/'.$name.'.php');
 			$return .= "\nLa commande $name à bien été ajoutée à GIT !!";
 		}
 
@@ -186,6 +195,11 @@ class generate extends cmd {
 		if($this->os_service->IAmOnUnixSystem()) {
 			exec('git add '.__DIR__.'/../entities/'.ucfirst($name).'Entity.php');
 			exec('git add '.__DIR__.'/../dao/'.ucfirst($name).'Dao.php');
+			$return .= "\nL'entité et le répository $name ont bien été ajoutés à GIT !!";
+		}
+		else {
+			exec('"c:\Program Files\Git\bin\git.exe" add '.__DIR__.'/../entities/'.ucfirst($name).'Entity.php');
+			exec('"c:\Program Files\Git\bin\git.exe" add '.__DIR__.'/../dao/'.ucfirst($name).'Dao.php');
 			$return .= "\nL'entité et le répository $name ont bien été ajoutés à GIT !!";
 		}
 		return $return;

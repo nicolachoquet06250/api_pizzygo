@@ -2,6 +2,19 @@
 
 class Base {
 	private static $confs = [];
+
+	protected function get_controllers() {
+		$directory = __DIR__.'/../mvc/controllers';
+		$dir = opendir($directory);
+		$controllers = [];
+		while (($elem = readdir($dir)) !== false) {
+			if($elem !== '.' && $elem !== '..') {
+				$controllers[] = strtolower(str_replace('Controller.php', '', $elem));
+			}
+		}
+		return $controllers;
+	}
+
 	/**
 	 * @param $model
 	 * @return Model

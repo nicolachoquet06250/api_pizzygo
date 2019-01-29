@@ -3,6 +3,10 @@
 class LoginController extends Controller {
 	/**
 	 * @inheritdoc
+	 * @param string $email
+	 * @param string $password
+	 * @alias_method login
+	 * @http_verb get
 	 * @throws Exception
 	 */
 	protected function index() {
@@ -10,10 +14,13 @@ class LoginController extends Controller {
 	}
 
 	/**
+	 * @param string $email
+	 * @param string $password
+	 * @http_verb get
 	 * @return Response
 	 * @throws Exception
 	 */
-	public function login() {
+	protected function login() {
 		/** @var LoginModel $model */
 		$model = $this->get_model('login');
 		$user = $model->login($this->get('email'), $this->get('password'));
@@ -31,10 +38,11 @@ class LoginController extends Controller {
 	}
 
 	/**
+	 * @http_verb get
 	 * @return Response
 	 * @throws Exception
 	 */
-	public function logged() {
+	protected function logged() {
 		/** @var LoginModel $model */
 		$model = $this->get_model('login');
 		return $this->get_response(
@@ -45,10 +53,11 @@ class LoginController extends Controller {
 	}
 
 	/**
+	 * @http_verb get
 	 * @return Response
 	 * @throws Exception
 	 */
-	public function disconnect() {
+	protected function disconnect() {
 		/** @var LoginModel $model */
 		$model = $this->get_model('login');
 
@@ -60,10 +69,11 @@ class LoginController extends Controller {
 	}
 
 	/**
-	 * @return mixed
+	 * @http_verb get
+	 * @return Response
 	 * @throws Exception
 	 */
-	public function logged_user() {
+	protected function logged_user() {
 		/** @var SessionService $session_service */
 		$session_service = $this->get_service('session');
 

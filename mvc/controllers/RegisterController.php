@@ -4,6 +4,18 @@ class RegisterController extends Controller {
 
 	/**
 	 * @inheritdoc
+	 * @param string $name
+	 * @param string $surname
+	 * @param string $email
+	 * @param string $phone
+	 * @param string $address
+	 * @param string $password
+	 * @param string $description
+	 * @param string $profil_img
+	 * @param string $pseudo
+	 * @param string $website
+	 * @http_verb post
+	 * @alias_method register
 	 * @throws Exception
 	 */
 	protected function index() {
@@ -11,6 +23,18 @@ class RegisterController extends Controller {
 	}
 
 	/**
+	 * @param string $name
+	 * @param string $surname
+	 * @param string $email
+	 * @param string $phone
+	 * @param string $address
+	 * @param string $password
+	 * @param string $description
+	 * @param string $profil_img
+	 * @param string $pseudo
+	 * @param string $website
+	 * @http_verb post
+	 * @return Response
 	 * @throws Exception
 	 */
 	protected function register() {

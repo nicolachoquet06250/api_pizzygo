@@ -3,6 +3,7 @@
 class TestController extends Controller {
 
 	/**
+	 * @http_verb get
 	 * @return Response
 	 * @throws Exception
 	 */
@@ -11,10 +12,11 @@ class TestController extends Controller {
 	}
 
 	/**
+	 * @http_verb get
 	 * @return Response
 	 * @throws Exception
 	 */
-	public function get_user() {
+	protected function get_user() {
 		/** @var UserDao $user_dao */
 		$user_dao = $this->get_dao('user');
 		$email = $this->get('email');

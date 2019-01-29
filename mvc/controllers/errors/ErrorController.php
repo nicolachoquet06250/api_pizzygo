@@ -9,13 +9,16 @@ class ErrorController extends Controller {
 	 * @throws Exception
 	 */
 	protected function index() {
-		header('HTTP/1.0 '.$this->code.' '.$this->message);
 		return $this->get_response(
 			[
 				'code' => $this->code,
 				'message' => $this->message,
 			]
 		);
+	}
+
+	protected function write_header() {
+		header('HTTP/1.0 '.$this->code.' '.$this->message);
 	}
 
 	/**
@@ -58,6 +61,7 @@ class ErrorController extends Controller {
 	 * @return string
 	 */
 	public function display() {
+		$this->write_header();
 		return $this->run();
 	}
 }
