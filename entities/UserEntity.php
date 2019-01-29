@@ -72,6 +72,18 @@ class UserEntity extends Entity {
 	 * @size(255)
 	 */
 	protected $activate_token = '';
+	/**
+	 * @var string $website
+	 * @not_null
+	 * @size(255)
+	 */
+	protected $website = '';
+	/**
+	 * @var string $pseudo
+	 * @not_null
+	 * @size(255)
+	 */
+	protected $pseudo = '';
 
 	/**
 	 * @return bool

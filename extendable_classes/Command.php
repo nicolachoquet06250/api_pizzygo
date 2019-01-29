@@ -2,6 +2,7 @@
 
 class Command extends Base {
 	private static $default_action = 'index';
+	private static $default_command = 'help';
 	public static function clean_args($args) {
 		unset($args[0]);
 		$_args = [];
@@ -16,15 +17,21 @@ class Command extends Base {
 	 * @throws Exception
 	 */
 	public static function create($args) {
-		if(strstr($args[0], ':')) {
-			$args[0] = explode(':', $args[0]);
+		if(count($args) > 0) {
+			if (strstr($args[0], ':')) {
+				$args[0] = explode(':', $args[0]);
+			}
+			else {
+				$args[0] = [
+					$args[0],
+				];
+			}
 		}
-		else {
+		else
 			$args[0] = [
-				$args[0],
+				null
 			];
-		}
-		$controller = $args[0][0];
+		$controller = (is_null($args[0][0])) ? self::$default_command : $args[0][0];
 		$action = isset($args[0][1]) ? $args[0][1] : self::$default_action;
 		$args = self::clean_args($args);
 		require_once __DIR__.'/../commands/'.$controller.'.php';

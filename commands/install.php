@@ -426,4 +426,13 @@ class install extends cmd {
 		$install_service = $this->get_service('install');
 		$install_service->drop_test_databases();
 	}
+
+	/**
+	 * @throws Exception
+	 */
+	protected function update_db_structure() {
+		foreach ($this->get_entities() as $entity) {
+			$this->get_dao($entity)->update_structure();
+		}
+	}
 }

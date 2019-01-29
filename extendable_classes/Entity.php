@@ -246,6 +246,10 @@ class Entity extends Base {
 		return $result ? $this : false;
 	}
 
+	/**
+	 * @param bool $for_insert
+	 * @return string
+	 */
 	protected function get_table_name($for_insert = true) {
 		$prefix = '';
 		if($this->mysql_conf->has_property('table-prefix')) {
@@ -298,6 +302,9 @@ class Entity extends Base {
 		}
 	}
 
+	/**
+	 * @return array
+	 */
 	public function toArrayForJson() {
 		$array = [];
 		foreach ($this->get_fields() as $field => $details) {
@@ -318,84 +325,5 @@ class Entity extends Base {
 			}
 		}
 		return $array;
-	}
-
-	public function __call($name, $arguments) {
-		$regexs = [
-			'`getFrom([A-Z][a-z0-9]+)_(And|Or)_([A-Z][a-z0-9]+)+`' => function($matches, &$arguments) {
-				$array = [];
-				$_matches = [];
-				unset($matches[0]);
-				foreach ($matches as $item) {
-					$_matches[] = $item;
-				}
-				$matches = $_matches;
-
-				$i = 0;
-				$j = 0;
-				foreach ($matches as $match) {
-					if($match !== 'And' && $match !== 'Or') {
-						$array[strtolower($match)] = [
-							'value' => $arguments[$i],
-							'operator' => (isset($matches[$j+1]) && ($matches[$j+1] === 'And' || $matches[$j+1] === 'Or') ? strtoupper($matches[$j+1]) : null),
-						];
-						$i++;
-					}
-					$j++;
-				}
-				var_dump($array);
-			}
-		];
-
-		$exists = false;
-		foreach ($regexs as $regex => $callback) {
-			preg_match($regex, $name, $matches);
-			if(empty($matches)) {
-				continue;
-			}
-			$exists = [
-				'callback' => $callback,
-				'matches' => $matches,
-			];
-			break;
-		}
-		//		if(substr($name, 0, strlen('getFrom')) === 'getFrom') {
-		//			$champ = substr($name, strlen('getFrom'));
-		//			if(strstr($champ, 'And')) {
-		//				$champ = explode('And', $champ);
-		//				foreach ($champ as $i => $_champ) {
-		//					unset($champ[$i]);
-		//					$champ[strtolower($_champ)] = $arguments[$i];
-		//				}
-		//			}
-		//			else {
-		//				$champ = strtolower($champ);
-		//			}
-		////			return $this->getFrom($champ, $arguments[0]);
-		//			var_dump('getFrom', $champ);
-		//		}
-		if($exists) {
-			return $exists['callback']($exists['matches'], $arguments);
-		}
-		else {
-			if(in_array($name, get_class_methods(get_class($this)))) {
-				$params = '';
-				$i = 0;
-				foreach ($arguments as $argument) {
-					if(is_string($argument)) {
-						$params .= '"'.$argument.'"';
-					}
-					elseif (is_numeric($argument)) {
-						$params .= $argument;
-					}
-					elseif (is_object($argument)) {
-						$params .= '$arguments['.$i.']';
-					}
-					$i++;
-				}
-				return eval("$this->$name($params);");
-			}
-		}
-		return [];
 	}
 }

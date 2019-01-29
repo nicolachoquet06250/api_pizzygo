@@ -1,6 +1,9 @@
 <?php
 
 class RoleEntity extends Entity {
+	const USER = 'role_user';
+	const ADMIN = 'role_admin';
+	const VENDOR = 'role_vendor';
 	/**
 	 * @var int $id
 	 * @not_null

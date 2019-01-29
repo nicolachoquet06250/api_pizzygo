@@ -1,8 +1,153 @@
 <?php
 
 class help extends cmd {
+	/**
+	 * @param string $header
+	 * @param string $retour
+	 */
+	private function write_before_and_after_header($header, $retour) {
+		echo '  ';
+		for($i = 0; $i < strlen($header)-4; $i++) {
+			echo "#";
+		}
+		echo '  ';
+		echo $retour;
+	}
+
+	/**
+	 * @throws ReflectionException
+	 */
 	protected function index() {
-		echo " ## HELP FOR COMMANDS ##\n";
+		$retour = $this->get_service('os')->IamOnUnixSystem() ? "\n" : "\r";
+		$prefix = $sufix = '  #####  ';
+		$header = $prefix.'HELP FOR COMMANDS'.$sufix;
+		$this->write_before_and_after_header($header, $retour);
+		$header_size = strlen($header);
+		echo "$header$retour";
+		if($this->has_arg('command')) {
+			$class_path = __DIR__.'/'.$this->get_arg('command').'.php';
+			if(is_file($class_path)) {
+				require_once $class_path;
+				$ref      = new ReflectionClass($this->get_arg('command'));
+				$methods  = $ref->getMethods();
+				$_methods = [];
+				foreach ($methods as $method) {
+					if ($method->class !== Base::class && $method->class !== cmd::class && $method->isProtected()) {
+						$_methods[] = $method->name;
+					}
+				}
+				$methods = $_methods;
+				foreach ($methods as $method) {
+					$command_name = $method;
+					$rest_size    = $header_size - strlen($prefix.$command_name.$sufix);
+					$marge_right  = $marge_left = (int)($rest_size / 2);
+					$line         = $prefix;
+					for ($i = 0; $i < $marge_left; $i++) {
+						$line .= ' ';
+					}
+					$line .= $command_name;
+					for ($i = 0; $i < $marge_right; $i++) {
+						$line .= ' ';
+					}
+
+					if (strlen($line) + strlen($sufix) < $header_size) {
+						$line .= ' ';
+					}
+
+					if (strlen($line) + strlen($sufix) === $header_size) {
+						$line .= $sufix;
+					}
+					elseif (strlen($line) + strlen($sufix) === $header_size + 1) {
+						$line .= substr($sufix, 0, strlen($sufix) - 3);
+					}
+					elseif (strlen($line) + strlen($sufix) === $header_size + 2) {
+						$line .= substr($sufix, 0, strlen($sufix) - 4);
+					}
+					elseif (strlen($line) + strlen($sufix) === $header_size + 3) {
+						$line .= substr($sufix, 0, strlen($sufix) - 5);
+					}
+					elseif (strlen($line) + strlen($sufix) === $header_size + 4) {
+						$line .= substr($sufix, 0, strlen($sufix) - 6);
+					}
+					elseif (strlen($line) + strlen($sufix) === $header_size + 5) {
+						$line .= substr($sufix, 0, strlen($sufix) - 7);
+					}
+					elseif (strlen($line) + strlen($sufix) === $header_size + 6) {
+						$line .= substr($sufix, 0, strlen($sufix) - 8);
+					}
+					$line .= $retour;
+					echo $line;
+				}
+			}
+			else {
+				$command_name = '`'.$this->get_arg('command').'` not found';
+				$rest_size    = $header_size - strlen($prefix.$command_name.$sufix);
+				$marge_right  = $marge_left = (int)($rest_size / 2);
+				$line         = $prefix;
+				for ($i = 0; $i < $marge_left; $i++) {
+					$line .= ' ';
+				}
+				$line .= $command_name;
+				for ($i = 0; $i < $marge_right; $i++) {
+					$line .= ' ';
+				}
+
+				if (strlen($line) + strlen($sufix) < $header_size) {
+					$line .= ' ';
+				}
+
+				if (strlen($line) + strlen($sufix) === $header_size) {
+					$line .= $sufix;
+				}
+				elseif (strlen($line) + strlen($sufix) === $header_size + 1) {
+					$line .= substr($sufix, 0, strlen($sufix) - 3);
+				}
+				elseif (strlen($line) + strlen($sufix) === $header_size + 2) {
+					$line .= substr($sufix, 0, strlen($sufix) - 4);
+				}
+				elseif (strlen($line) + strlen($sufix) === $header_size + 3) {
+					$line .= substr($sufix, 0, strlen($sufix) - 5);
+				}
+				elseif (strlen($line) + strlen($sufix) === $header_size + 4) {
+					$line .= substr($sufix, 0, strlen($sufix) - 6);
+				}
+				elseif (strlen($line) + strlen($sufix) === $header_size + 5) {
+					$line .= substr($sufix, 0, strlen($sufix) - 7);
+				}
+				elseif (strlen($line) + strlen($sufix) === $header_size + 6) {
+					$line .= substr($sufix, 0, strlen($sufix) - 8);
+				}
+				$line .= $retour;
+				echo $line;
+			}
+		}
+		else {
+			$directory = __DIR__;
+			$dir       = opendir($directory);
+			while (($elem = readdir($dir)) !== false) {
+				if ($elem !== '.' && $elem !== '..') {
+					$command_name = explode('.', $elem)[0];
+					$rest_size    = $header_size - strlen($prefix.$command_name.$sufix);
+					$marge_right  = $marge_left = (int)($rest_size / 2);
+					$line         = $prefix;
+					for ($i = 0; $i < $marge_left; $i++) {
+						$line .= ' ';
+					}
+					$line .= $command_name;
+					for ($i = 0; $i < $marge_right; $i++) {
+						$line .= ' ';
+					}
+
+					if (strlen($line) + strlen($sufix) < $header_size) {
+						$line .= ' ';
+					}
+					$line .= $prefix;
+					$line .= $retour;
+					echo $line;
+				}
+			}
+		}
+		$this->write_before_and_after_header($header, $retour);
 	}
 
 	/**
@@ -145,5 +290,13 @@ class help extends cmd {
 			return $user;
 		}
 		else return $user->toArrayForJson();
+	}
+
+	/**
+	 * @throws Exception
+	 */
+	protected function update_structure() {
+		$user_dao = $this->get_dao('user');
+		$user_dao->update_structure();
 	}
 }
