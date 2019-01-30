@@ -76,6 +76,7 @@ HTML;
 							$doc = str_replace($retour."\t */", '', $doc);
 							$doc = str_replace($retour."\t\t */", '', $doc);
 							$doc = explode($retour, $doc);
+							$not_in_doc = false;
 							foreach ($doc as $line) {
 								preg_match('`@param ([a-z]+) \$([A-Za-z0-9]+)`', $line, $matches);
 								if(!empty($matches)) {
@@ -91,12 +92,18 @@ HTML;
 									$http_verb = strtoupper($matches[1]);
 									continue;
 								}
+								preg_match('`@not_in_doc`', $line, $matches);
+								if(!empty($matches)) {
+									$not_in_doc = true;
+									continue;
+								}
 							}
 
 							$infos = [
 								'alias' => $alias,
 								'params' => $params,
 								'http_verb' => $http_verb,
+								'in_doc' => !$not_in_doc,
 							];
 
 							if ($method->getName() === 'index') {
@@ -127,11 +134,16 @@ HTML;
 			$max = count($this->routes);
 			$i = 0;
 			foreach ($this->routes as $route => $detail) {
-				$sections .= $this->get_section_template($detail['http_verb'], $route, $detail['params'], $detail['alias']);
+				if($detail['in_doc']) {
+					$sections .= $this->get_section_template($detail['http_verb'], $route, $detail['params'], $detail['alias']);
 
-				$i++;
-				if($i < $max) {
-					$sections .= '<hr>';
+					$i++;
+					if ($i < $max) {
+						$sections .= '<hr>';
+					}
+				}
+				else {
+					$max--;
 				}
 			}
 
@@ -178,11 +190,16 @@ HTML;
 		<body>
 			<header>
 				<div class="container">
-					<div class="col s12">
-						<h1 class="title">
-							<img class="responsive-img" style="height: 100px;" alt="logo pizzygo" src="/public/img/logo_pizzygo.png" />
-							Documentation Pizzygo API
-						</h1>
+					<div class="row">
+						<div class="col s10">
+							<h1 class="title">
+								<img class="responsive-img" style="height: 100px;" alt="logo pizzygo" src="/public/img/logo_pizzygo.png" />
+								Documentation Pizzygo API
+							</h1>
+						</div>
+						<div class="col s2" style="padding-top: 100px;">
+							<input type="button" class="btn orange" value="Deconnexion" onclick="window.location.href='/api/index.php/documentation/disconnect'" />
+						</div>
 					</div>
 				</div>
 			</header>
@@ -195,5 +212,84 @@ HTML;
 	</html>
 HTML;
 			return $object;
+		}
+
+		public function get_connexion_content($error_message = null) {
+			if(is_null($error_message)) {
+				$error_message = '';
+			}
+			$color_class = $error_message === '' ? '' : 'red-text';
+			$content = <<<HTML
+	<DOCTYPE html>
+	<html>
+		<head>
+			<meta charset="utf-8" />
+			<title>Documentation Pizzygo API</title>
+			  <link rel="icon" href="/public/img/logo_pizzygo.png" />
+			  <link rel="stylesheet" href="/public/libs/materialize/css/materialize.min.css" />
+			  <script src="/public/libs/materialize/js/materialize.min.js"></script>
+			  <script src="https://code.jquery.com/jquery-3.3.1.js"
+			          integrity="sha256-2Kok7MbOyxpgUVvAk/HJ2jigOSYS2auK4Pfzbm7uH60="
+					  crossorigin="anonymous"></script>
+		</head>
+		<body>
+			<header>
+				<div class="container">
+					<div class="col s12">
+						<h1 class="title">Connexion</h1>
+					</div>
+				</div>
+			</header>
+			<main>
+				<div class="container">
+					<form method="post" action="/api/index.php/documentation">
+						<div class="row">
+							<div class="col s12 m6">
+								<div class="input-field">
+									<label for="email">Email</label>
+									<input name="email" type="email" id="email" />
+								</div>
+							</div>
+							<div class="col s12 m6">
+								<div class="input-field">
+									<label for="password">Password</label>
+									<input name="password" type="password" id="password" />
+								</div>
+							</div>
+							<div class="col s12 {$color_class}">{$error_message}</div>
+							<div class="col s12 m4 offset-m4">
+								<div class="btn-block">
+									<input type="submit" id="connexion" class="btn orange" value="Se connected" />
+								</div>
+							</div>
+						</div>
+					</form>
+				</div>
+			</main>
+		</body>
+	</html>
+HTML;
+			return $content;
+
+		}
+
+		/**
+		 * @param UserEntity $user
+		 * @throws Exception
+		 */
+		public function create_session(UserEntity $user) {
+			/** @var SessionService $session_service */
+			$session_service = $this->get_service('session');
+			$session_service->set('doc_admin', []);
+		}
+
+		/**
+		 * @throws Exception
+		 */
+		public function delete_session() {
+			/** @var SessionService $session_service */
+			$session_service = $this->get_service('session');
+			$session_service->remove('doc_admin');
+			return !$session_service->has_key('doc_admin');
 		}
 	}

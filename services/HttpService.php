@@ -18,20 +18,6 @@ class HttpService extends Service {
 		$this->response_header = isset($http_response_header) ? $http_response_header : null;
 		$this->session = isset($_SESSION) ? $_SESSION : null;
 		$this->server = isset($_SERVER) ? $_SERVER : null;
-		$body_request = file_get_contents('php://input');
-		/** @var OsService $service_os */
-		$service_os = $this->get_service('os');
-		if($body_request) {
-			if ($service_os->IAmOnUnixSystem()) {
-				$body_request = explode("\n", $body_request);
-			}
-			else {
-				$body_request = explode("\r", $body_request);
-			}
-			foreach ($body_request as $item) {
-				$_POST[explode('=', $item)[0]] = explode('=', $item)[1];
-			}
-		}
 	}
 
 	public function get($key = null) {
