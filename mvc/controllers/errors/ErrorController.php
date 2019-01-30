@@ -9,6 +9,7 @@ class ErrorController extends Controller {
 	 * @throws Exception
 	 */
 	protected function index() {
+		$this->write_header();
 		return $this->get_response(
 			[
 				'code' => $this->code,
@@ -25,6 +26,15 @@ class ErrorController extends Controller {
 	 * @return Response
 	 * @throws Exception
 	 */
+	protected function _201() {
+		$this->code(201);
+		return $this->index();
+	}
+
+	/**
+	 * @return Response
+	 * @throws Exception
+	 */
 	protected function _404() {
 		$this->code(404);
 		return $this->index();
@@ -34,8 +44,35 @@ class ErrorController extends Controller {
 	 * @return Response
 	 * @throws Exception
 	 */
+	protected function _400() {
+		$this->code(400);
+		return $this->index();
+	}
+
+	/**
+	 * @return Response
+	 * @throws Exception
+	 */
+	protected function _403() {
+		$this->code(403);
+		return $this->index();
+	}
+
+	/**
+	 * @return Response
+	 * @throws Exception
+	 */
 	protected function _500() {
 		$this->code(500);
+		return $this->index();
+	}
+
+	/**
+	 * @return Response
+	 * @throws Exception
+	 */
+	protected function _501() {
+		$this->code(501);
 		return $this->index();
 	}
 
@@ -61,7 +98,7 @@ class ErrorController extends Controller {
 	 * @return string
 	 */
 	public function display() {
-		$this->write_header();
+//		$this->write_header();
 		return $this->run();
 	}
 }

@@ -17,24 +17,32 @@ class LoginController extends Controller {
 	 * @param string $email
 	 * @param string $password
 	 * @http_verb get
-	 * @return Response
+	 * @return Response|ErrorController
 	 * @throws Exception
 	 */
 	protected function login() {
+		/** @var SessionService $session_service */
+		$session_service = $this->get_service('session');
 		/** @var LoginModel $model */
-		$model = $this->get_model('login');
-		$user = $model->login($this->get('email'), $this->get('password'));
-		if($user) {
-			if (is_object($user) && $model->register_session($user)) {
-				return $this->get_response(
-					[
-						'status' => true,
-						'user' => $user->toArrayForJson(),
-					]
-				);
+		if(!$session_service->has_key('user')) {
+			if($this->get('email') && $this->get('password')) {
+				$model = $this->get_model('login');
+				$user  = $model->login($this->get('email'), $this->get('password'));
+				if ($user) {
+					if (is_object($user) && $model->register_session($user)) {
+						return $this->get_response(
+							[
+								'status' => true,
+								'user'   => $user->toArrayForJson(),
+							]
+						);
+					}
+				}
+				return $this->get_response($user);
 			}
+			return $this->get_error_controller(403)->message('you must fill in your email and your password');
 		}
-		return $this->get_response($user);
+		return $this->get_error_controller(501)->message('You are already login');
 	}
 
 	/**

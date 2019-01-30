@@ -179,7 +179,12 @@ HTML;
 				    		method: http_verb,
 				    		data: data
 				        }).done((data, textStatus, response) => {
-				            $('.http-code-write_json_response' + class_data).html(response.status).addClass((response.status === 200 ? 'new badge green white-text' : 'new badge red white-text'));
+				            $('.http-code-write_json_response' + class_data).html(response.status).addClass('new badge green white-text');
+				            $('.write_json_response' + class_data).html(JSON.stringify(data, null, "  "));
+				            hljs.highlightBlock(document.querySelector('.write_json_response' + class_data));
+				        }).fail(response => {
+				            let data = response.responseJSON;
+				            $('.http-code-write_json_response' + class_data).html(response.status).addClass('new badge red white-text');
 				            $('.write_json_response' + class_data).html(JSON.stringify(data, null, "  "));
 				            hljs.highlightBlock(document.querySelector('.write_json_response' + class_data));
 				        });
