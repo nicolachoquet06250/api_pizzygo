@@ -37,4 +37,21 @@
 			list($count) = $query->fetch_row();
 			return $count === 1;
 		}
+
+		/**
+		 * @return array
+		 * @throws Exception
+		 */
+		public function toArrayForJson() {
+			$array = parent::toArrayForJson();
+
+			/** @var UserDao $user_dao */
+			$user_dao = $this->get_dao('user');
+			/** @var UserEntity[]|bool $user */
+			$user = $user_dao->getById($array['user_id']);
+			$user = $user ? $user[0]->toArrayForJson() : $array['user_id'];
+			$array['user_id'] = $user;
+
+			return $array;
+		}
 	}

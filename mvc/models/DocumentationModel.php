@@ -3,7 +3,7 @@
 	class DocumentationModel extends BaseModel {
 		private $routes;
 		private $section_template = <<<HTML
-			<div class="row">
+			<div class="row" id="{{write_json_response}}">
 				<div class="col s10">
 					<code><pre><b>{{http_method}} [domain]/api/index.php{{url}}</b> <i>{{alias}}</i></pre></code>
 				</div>
@@ -13,7 +13,7 @@
 				<div class="col s12">
 					{{input_fields}}
 				</div>
-				<div class="col s12">
+				<div class="col s12" style="max-height: 300px; overflow: scroll;">
 					<pre class="write_json_response {{write_json_response}}"><code></code></pre>
 				</div>
 			</div>
@@ -58,6 +58,7 @@ HTML;
 
 		/**
 		 * @throws ReflectionException
+		 * @throws Exception
 		 */
 		private function genere_routes() {
 			$retour = $this->get_service('os')->IAmOnUnixSystem() ? "\n" : "\r\n";
@@ -154,6 +155,7 @@ HTML;
 	<DOCTYPE html>
 	<html>
 		<head>
+        	<meta name="viewport" content="width=device-width, initial-scale=1">
 			<meta charset="utf-8" />
 			<title>Documentation Pizzygo API</title>
 			  <link rel="icon" href="/public/img/logo_pizzygo.png" />
@@ -175,14 +177,22 @@ HTML;
 				            data[field] = value;
 				        });
 				        $.ajax({
+				        	beforeSend: () => {
+								$('#write_json_response' + class_data)
+								.append('<div class="col s4 offset-s4">' +
+								 	'<img id="loader_' + class_data + '" src="/public/img/loader.gif" alt="loading..." />' +
+								  '</div');
+							},
 				    		url: url,
 				    		method: http_verb,
 				    		data: data
 				        }).done((data, textStatus, response) => {
+				            $('#loader_' + class_data).remove();
 				            $('.http-code-write_json_response' + class_data).html(response.status).addClass('new badge green white-text');
 				            $('.write_json_response' + class_data).html(JSON.stringify(data, null, "  "));
 				            hljs.highlightBlock(document.querySelector('.write_json_response' + class_data));
 				        }).fail(response => {
+				            $('#loader_' + class_data).remove();
 				            let data = response.responseJSON;
 				            $('.http-code-write_json_response' + class_data).html(response.status).addClass('new badge red white-text');
 				            $('.write_json_response' + class_data).html(JSON.stringify(data, null, "  "));
@@ -232,12 +242,13 @@ HTML;
 	<DOCTYPE html>
 	<html>
 		<head>
+        	<meta name="viewport" content="width=device-width, initial-scale=1">
 			<meta charset="utf-8" />
 			<title>Documentation Pizzygo API</title>
-			  <link rel="icon" href="/public/img/logo_pizzygo.png" />
-			  <link rel="stylesheet" href="/public/libs/materialize/css/materialize.min.css" />
-			  <script src="/public/libs/materialize/js/materialize.min.js"></script>
-			  <script src="https://code.jquery.com/jquery-3.3.1.js"
+			<link rel="icon" href="/public/img/logo_pizzygo.png" />
+			<link rel="stylesheet" href="/public/libs/materialize/css/materialize.min.css" />
+			<script src="/public/libs/materialize/js/materialize.min.js"></script>
+			<script src="https://code.jquery.com/jquery-3.3.1.js"
 			          integrity="sha256-2Kok7MbOyxpgUVvAk/HJ2jigOSYS2auK4Pfzbm7uH60="
 					  crossorigin="anonymous"></script>
 		</head>

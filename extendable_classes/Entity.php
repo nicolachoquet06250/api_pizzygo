@@ -115,7 +115,7 @@ class Entity extends Base {
 			'@entity ' => function(ReflectionProperty $prop, string $doc_line) {
 				$this->fields[$prop->getName()]['entity'] = [
 					'table' => strtolower(str_replace('Entity', '', explode(' ', $doc_line)[1])),
-					'searchBy' => explode('_', $prop->getName())[1],
+					'searchBy' => explode('_', $prop->getName())[count(explode('_', $prop->getName()))-1],
 				];
 			},
 			'@not_in_table' => function(ReflectionProperty $prop) {
@@ -291,6 +291,9 @@ class Entity extends Base {
 	 */
 	public function set($prop, $value, $update = false) {
 		if(isset($this->$prop) && $this->$prop !== null) {
+			if($this->fields[$prop]['type'] === 'int') {
+				$value = (int)$value;
+			}
 			if(isset($this->fields[$prop]['entity'])) {
 				$dao = $this->get_repository($this->fields[$prop]['entity']['table']);
 				$_value = $dao->getBy($this->fields[$prop]['entity']['searchBy'], $value);
