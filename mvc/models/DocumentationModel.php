@@ -1,12 +1,18 @@
 <?php
 
 	class DocumentationModel extends BaseModel {
+		private $routes;
 		private $section_template = <<<HTML
-			<div>
-				<code><pre>{{http_method}} [domain]/api/index.php{{url}}</pre>{{alias}}</code>
-				<br />
-				{{input_fields}}
-				<pre class="{{write_json_response}}"><code></code></pre>
+			<div class="row">
+				<div class="col s12">
+					<code><pre><b>{{http_method}} [domain]/api/index.php{{url}}</b> <i>{{alias}}</i></pre></code>
+				</div>
+				<div class="col s12">
+					{{input_fields}}
+				</div>
+				<div class="col s12">
+					<pre class="write_json_response {{write_json_response}}"><code></code></pre>
+				</div>
 			</div>
 HTML;
 
@@ -22,9 +28,14 @@ HTML;
 				else {
 					$type = 'text';
 				}
-				$input_fields .= '<input type="'.$type.'" class="'.str_replace('/', '_', $url).(!is_null($alias) ? '_'.$alias : '').'" id="'.str_replace('/', '_', $url).(!is_null($alias) ? '_'.$alias : '').'-'.$param.'-'.$type.'" placeholder="'.$param.'" />';
+				$input_fields .= '<div class="col s12 m6 l4">
+	<div class="input-field">
+		<label for="'.str_replace('/', '_', $url).(!is_null($alias) ? '_'.$alias : '').'-'.$param.'-'.$type.'">'.$param.'</label>
+		<input type="'.$type.'" class="'.str_replace('/', '_', $url).(!is_null($alias) ? '_'.$alias : '').'" id="'.str_replace('/', '_', $url).(!is_null($alias) ? '_'.$alias : '').'-'.$param.'-'.$type.'" placeholder="'.$param.'" />
+	</div>
+</div>';
 			}
-			$input_fields .= '<input type="button" data-url="/api/index.php'.$url.(!is_null($alias) ? '/'.$alias : '').'" value="Envoyer" data-http_verb="'.$http_verb.'" data-class="'.str_replace('/', '_', $url).(!is_null($alias) ? '_'.$alias : '').'" />';
+			$input_fields .= '<input type="button" class="btn orange" data-url="/api/index.php'.$url.(!is_null($alias) ? '/'.$alias : '').'" value="Envoyer" data-http_verb="'.$http_verb.'" data-class="'.str_replace('/', '_', $url).(!is_null($alias) ? '_'.$alias : '').'" />';
 			return str_replace(
 				[
 					'{{http_method}}',
@@ -36,21 +47,18 @@ HTML;
 					$http_verb,
 					$url,
 					$input_fields,
-					(is_null($alias) ? '' : '<br><code><pre>ALIAS '.$http_verb.' [domain]/api/index.php'.$url.'/'.$alias.'</pre></code>'),
+					(is_null($alias) ? '' : '[ALIAS '.$http_verb.' [domain]/api/index.php'.$url.'/'.$alias.']'),
 					'write_json_response'.str_replace('/', '_', $url).(!is_null($alias) ? '_'.$alias : '')
 				], $this->section_template
 			);
 		}
 
 		/**
-		 * @return string
 		 * @throws ReflectionException
-		 * @throws Exception
 		 */
-		public function get_doc_content() {
+		private function genere_routes() {
 			$retour = $this->get_service('os')->IAmOnUnixSystem() ? "\n" : "\r\n";
 			$routes = [];
-			$sections = '';
 			foreach ($this->get_controllers() as $controller) {
 				$class = $controller;
 				$controller = ucfirst($controller).'Controller';
@@ -102,9 +110,23 @@ HTML;
 				}
 			}
 
-			$max = count($routes);
+			$this->routes = $routes;
+		}
+
+		/**
+		 * @return string
+		 * @throws ReflectionException
+		 * @throws Exception
+		 */
+		public function get_doc_content() {
+			$sections = '';
+			$this->genere_routes();
+
+			ksort($this->routes);
+
+			$max = count($this->routes);
 			$i = 0;
-			foreach ($routes as $route => $detail) {
+			foreach ($this->routes as $route => $detail) {
 				$sections .= $this->get_section_template($detail['http_verb'], $route, $detail['params'], $detail['alias']);
 
 				$i++;
@@ -119,20 +141,15 @@ HTML;
 		<head>
 			<meta charset="utf-8" />
 			<title>Documentation Pizzygo API</title>
+			  <link rel="icon" href="/public/img/logo_pizzygo.png" />
+			  <link rel="stylesheet" href="/public/libs/materialize/css/materialize.min.css" />
+			  <script src="/public/libs/materialize/js/materialize.min.js"></script>
+			  <script src="https://code.jquery.com/jquery-3.3.1.js"
+			          integrity="sha256-2Kok7MbOyxpgUVvAk/HJ2jigOSYS2auK4Pfzbm7uH60="
+					  crossorigin="anonymous"></script>
 			  <link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/styles/ocean.min.css">
-  			  <script src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/highlight.min.js"></script>
-		</head>
-		<body>
-			<header>
-				<h1>Documentation Pizzygo API</h1>
-			</header>
-			<main>
-				{$sections}
-			</main>
-			<script src="https://code.jquery.com/jquery-3.3.1.js"
-					integrity="sha256-2Kok7MbOyxpgUVvAk/HJ2jigOSYS2auK4Pfzbm7uH60="
-					crossorigin="anonymous"></script>
-			<script>
+			  <script src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/highlight.min.js"></script>
+			  <script>
 				$(window).ready(() => {
 				    let valid_form = (http_verb, class_data, url) => {
 				        let inputs = $('.' + class_data);
@@ -148,7 +165,7 @@ HTML;
 				    		data: data
 				        }).done(data => {
 				            $('.write_json_response' + class_data).html(JSON.stringify(data, null, "  "));
-				            hljs.highlightBlock(document.querySelectorAll('.write_json_response' + class_data)[0]);
+				            hljs.highlightBlock(document.querySelector('.write_json_response' + class_data));
 				        });
 				    };
 				    
@@ -156,7 +173,24 @@ HTML;
 				        valid_form($(elem.target).data('http_verb'), $(elem.target).data('class'), $(elem.target).data('url'));
 				    });
 				});
-			</script>
+			  </script>
+		</head>
+		<body>
+			<header>
+				<div class="container">
+					<div class="col s12">
+						<h1 class="title">
+							<img class="responsive-img" style="height: 100px;" alt="logo pizzygo" src="/public/img/logo_pizzygo.png" />
+							Documentation Pizzygo API
+						</h1>
+					</div>
+				</div>
+			</header>
+			<main>
+				<div class="container">
+					{$sections}
+				</div>
+			</main>
 		</body>
 	</html>
 HTML;
