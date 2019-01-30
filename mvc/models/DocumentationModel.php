@@ -4,8 +4,11 @@
 		private $routes;
 		private $section_template = <<<HTML
 			<div class="row">
-				<div class="col s12">
+				<div class="col s10">
 					<code><pre><b>{{http_method}} [domain]/api/index.php{{url}}</b> <i>{{alias}}</i></pre></code>
+				</div>
+				<div class="col s2">
+					<span data-badge-caption="" class="http-code-{{write_json_response}}"></span>
 				</div>
 				<div class="col s12">
 					{{input_fields}}
@@ -175,7 +178,8 @@ HTML;
 				    		url: url,
 				    		method: http_verb,
 				    		data: data
-				        }).done(data => {
+				        }).done((data, textStatus, response) => {
+				            $('.http-code-write_json_response' + class_data).html(response.status).addClass((response.status === 200 ? 'new badge green white-text' : 'new badge red white-text'));
 				            $('.write_json_response' + class_data).html(JSON.stringify(data, null, "  "));
 				            hljs.highlightBlock(document.querySelector('.write_json_response' + class_data));
 				        });

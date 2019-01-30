@@ -2,6 +2,7 @@
 		
 	class DocumentationController extends Controller {
 		/**
+		 * @not_in_doc
 		 * @return Response
 		 * @throws Exception
 		 */
@@ -43,5 +44,6 @@
 			if($model->delete_session()) {
 				header('location: /api/index.php/documentation');
 			}
+			return $this->get_response('', Response::HTML);
 		}
 	}

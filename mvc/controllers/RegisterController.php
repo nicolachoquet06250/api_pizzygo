@@ -16,6 +16,7 @@ class RegisterController extends Controller {
 	 * @param string $website
 	 * @http_verb post
 	 * @alias_method register
+	 * @not_in_doc
 	 * @throws Exception
 	 */
 	protected function index() {
