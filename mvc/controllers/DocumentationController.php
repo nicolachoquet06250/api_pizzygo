@@ -1,8 +1,11 @@
 <?php
-		
+
+	/**
+	 * Class DocumentationController
+	 * @not_in_doc
+	 */
 	class DocumentationController extends Controller {
 		/**
-		 * @not_in_doc
 		 * @return Response
 		 * @throws Exception
 		 */
@@ -36,7 +39,6 @@
 
 		/**
 		 * @throws Exception
-		 * @not_in_doc
 		 */
 		protected function disconnect() {
 			/** @var DocumentationModel $model */

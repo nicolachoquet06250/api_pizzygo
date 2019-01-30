@@ -62,16 +62,4 @@ class SessionService extends Service {
 	public function has_key(string $key) {
 		return isset($_SESSION[$key]);
 	}
-
-	/**
-	 * @param string|null $key
-	 * @return array|mixed|null
-	 */
-	public function toArrayForJson(string $key = null) {
-		if(is_null($key)) {
-			return $_SESSION;
-		}
-		$result = $this->get($key);
-		return is_array($result) ? $result : [$result];
-	}
 }

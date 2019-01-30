@@ -4,29 +4,47 @@
 		private $routes;
 		private $section_template = <<<HTML
 			<div class="row" id="{{write_json_response}}">
-				<div class="col s10">
-					<div class="row">
-						<div class="col s12 api_url">
-							<code><pre><b>{{http_method}} [domain]/api/index.php{{url}}</b></pre></code>	
-						</div>
-						<div class="col s12 api_url">
-							 <code><pre><i>{{alias}}</i></pre></code>
+				<div class="card">
+					<div class="card-title" style="padding-left: 15px; padding-top: 10px;">
+						<div class="row {{affichage}}">
+							<div class="col s12">
+								<h5 class="title">{{title}}</h5>
+							</div>
 						</div>
 					</div>
-				</div>
-				<div class="col s2">
-					<span data-badge-caption="" class="http-code-{{write_json_response}}"></span>
-				</div>
-				<div class="col s12">
-					{{input_fields}}
-				</div>
-				<div class="col s12" style="max-height: 300px; overflow: auto;">
-					<pre class="write_json_response {{write_json_response}}"><code></code></pre>
+					<div class="card-content">
+						<div class="row">
+							<div class="col s12">
+								<p>
+									{{describe}}
+								</p>
+							</div>
+							<div class="col s10">
+								<div class="row">
+									<div class="col s12 api_url">
+										<code><pre><b>{{http_method}} [domain]/api/index.php{{url}}</b></pre></code>	
+									</div>
+									<div class="col s12 api_url">
+										 <code><pre><i>{{alias}}</i></pre></code>
+									</div>
+								</div>
+							</div>
+							<div class="col s2">
+								<span data-badge-caption="" class="http-code-{{write_json_response}}"></span>
+							</div>
+							<div class="col s12">
+								{{input_fields}}
+							</div>
+							<div class="col s12" style="max-height: 300px; overflow: auto;">
+								<pre class="write_json_response {{write_json_response}}"><code></code></pre>
+							</div>
+						</div>
+					</div>
 				</div>
 			</div>
 HTML;
 
-		private function get_section_template($http_verb, $url, $params = [], $alias = null) {
+		private function get_section_template($http_verb, $url, $params = [], $alias = null, $title = '', $describe = '') {
 			$input_fields = '';
 			foreach ($params as $param => $type) {
 				if($type === 'string') {
@@ -46,19 +64,30 @@ HTML;
 </div>';
 			}
 			$input_fields .= '<input type="button" class="btn orange" data-url="/api/index.php'.$url.(!is_null($alias) ? '/'.$alias : '').'" value="Envoyer" data-http_verb="'.$http_verb.'" data-class="'.str_replace('/', '_', $url).(!is_null($alias) ? '_'.$alias : '').'" />';
+
+			$describe = str_replace(' * ', '', $describe);
+			$describe = str_replace(($this->get_service('os')->IAmOnUnixSystem() ? "\n" : "\n\r"), '<br>', $describe);
+			$describe = str_replace("\t", '', $describe);
+
 			return str_replace(
 				[
 					'{{http_method}}',
 					'{{url}}',
 					'{{input_fields}}',
 					'{{alias}}',
-					'{{write_json_response}}'
+					'{{write_json_response}}',
+					'{{title}}',
+					'{{describe}}',
+					'{{affichage}}'
 				], [
 					$http_verb,
 					$url,
 					$input_fields,
 					(is_null($alias) ? '' : '[ALIAS '.$http_verb.' [domain]/api/index.php'.$url.'/'.$alias.']'),
-					'write_json_response'.str_replace('/', '_', $url).(!is_null($alias) ? '_'.$alias : '')
+					'write_json_response'.str_replace('/', '_', $url).(!is_null($alias) ? '_'.$alias : ''),
+					$title,
+					$describe,
+					($title === '' ? 'hide' : 'show')
 				], $this->section_template
 			);
 		}
@@ -67,7 +96,7 @@ HTML;
 		 * @throws ReflectionException
 		 * @throws Exception
 		 */
-		private function genere_routes() {
+		private function generate_routes() {
 			$retour = $this->get_service('os')->IAmOnUnixSystem() ? "\n" : "\r\n";
 			$routes = [];
 			foreach ($this->get_controllers() as $controller) {
@@ -76,20 +105,39 @@ HTML;
 				if(is_file(__DIR__.'/../controllers/'.$controller.'.php')) {
 					require_once __DIR__.'/../controllers/'.$controller.'.php';
 					$ref     = new ReflectionClass($controller);
+					$class_doc = $ref->getDocComment();
+					$class_doc = str_replace('/**'.$retour, '', $class_doc);
+					$class_doc = str_replace($retour."\t */", '', $class_doc);
+					$class_doc = str_replace($retour."\t\t */", '', $class_doc);
+					$class_doc = explode($retour, $class_doc);
+					$class_in_doc = true;
+					foreach ($class_doc as $line) {
+						preg_match('`@not_in_doc`', $line, $matches);
+						if(!empty($matches)) {
+							$class_in_doc = false;
+							continue;
+						}
+					}
+					if(!$class_in_doc) {
+						continue;
+					}
+
 					$methods = $ref->getMethods();
 					foreach ($methods as $method) {
 						if ($method->getName() !== $class && $method->isProtected() && $method->class !== Controller::class && $method->class !== Base::class) {
 							$params = [];
 							$alias = null;
 							$http_verb = 'GET';
+							$title = '';
+							$describe = '';
+							$not_in_doc = false;
 							$doc = $method->getDocComment();
 							$doc = str_replace('/**'.$retour, '', $doc);
 							$doc = str_replace($retour."\t */", '', $doc);
 							$doc = str_replace($retour."\t\t */", '', $doc);
 							$doc = explode($retour, $doc);
-							$not_in_doc = false;
 							foreach ($doc as $line) {
-								preg_match('`@param ([a-z]+) \$([A-Za-z0-9]+)`', $line, $matches);
+								preg_match('`@param ([a-z]+) \$([A-Za-z0-9\_]+)`', $line, $matches);
 								if(!empty($matches)) {
 									$params[$matches[2]] = $matches[1];
 								}
@@ -108,6 +156,22 @@ HTML;
 									$not_in_doc = true;
 									continue;
 								}
+
+								preg_match('`@title ([^\r\n\@]+)`', $line, $matches);
+								if(!empty($matches)) {
+									$title = $matches[1];
+									continue;
+								}
+
+								preg_match('`@describe ([^\@]+)`', $line, $matches);
+								if(!empty($matches)) {
+									$describe = $matches[1];
+									continue;
+								}
+
+								if(!strstr($line, '@')) {
+									$describe .= ($this->get_service('os')->IAmOnUnixSystem() ? "\n" : "\n\r").$line;
+								}
 							}
 
 							$infos = [
@@ -115,6 +179,8 @@ HTML;
 								'params' => $params,
 								'http_verb' => $http_verb,
 								'in_doc' => !$not_in_doc,
+								'title' => $title,
+								'describe' => $describe,
 							];
 
 							if ($method->getName() === 'index') {
@@ -138,23 +204,13 @@ HTML;
 		 */
 		public function get_doc_content() {
 			$sections = '';
-			$this->genere_routes();
+			$this->generate_routes();
 
 			ksort($this->routes);
 
-			$max = count($this->routes);
-			$i = 0;
 			foreach ($this->routes as $route => $detail) {
 				if($detail['in_doc']) {
-					$sections .= $this->get_section_template($detail['http_verb'], $route, $detail['params'], $detail['alias']);
-
-					$i++;
-					if ($i < $max) {
-						$sections .= '<hr>';
-					}
-				}
-				else {
-					$max--;
+					$sections .= $this->get_section_template($detail['http_verb'], $route, $detail['params'], $detail['alias'], $detail['title'], $detail['describe']);
 				}
 			}
 

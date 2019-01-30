@@ -50,10 +50,11 @@ class OrderEntity extends Entity {
 	protected $shop_id = 0;
 
 	/**
+	 * @param bool $recursive
 	 * @return array
 	 * @throws Exception
 	 */
-	public function toArrayForJson() {
+	public function toArrayForJson($recursive = true) {
 		$array = parent::toArrayForJson();
 
 		/** @var UserDao $user_dao */

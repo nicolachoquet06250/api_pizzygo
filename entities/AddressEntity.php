@@ -29,10 +29,11 @@ class AddressEntity extends Entity {
 	protected $type_id = 0;
 
 	/**
+	 * @param bool $recursive
 	 * @return array
 	 * @throws Exception
 	 */
-	public function toArrayForJson() {
+	public function toArrayForJson($recursive = true) {
 		$array = parent::toArrayForJson();
 
 		/** @var Address_typeDao $address_type_dao */

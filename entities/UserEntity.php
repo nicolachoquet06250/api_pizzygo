@@ -117,10 +117,11 @@ class UserEntity extends Entity {
 	}
 
 	/**
+	 * @param bool $recursive
 	 * @return array
 	 * @throws Exception
 	 */
-	public function toArrayForJson() {
+	public function toArrayForJson($recursive = true) {
 		$user = parent::toArrayForJson();
 		$user['roles'] = $this->get_roles();
 		return $user;

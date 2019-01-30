@@ -18,7 +18,7 @@ class help extends cmd {
 	 * @throws ReflectionException
 	 */
 	protected function index() {
-		$retour = $this->get_service('os')->IamOnUnixSystem() ? "\n" : "\r";
+		$retour = $this->get_service('os')->IamOnUnixSystem() ? "\n" : "\n\r";
 		$prefix = $sufix = '  #####  ';
 		$header = $prefix.'HELP FOR COMMANDS'.$sufix;
 		$this->write_before_and_after_header($header, $retour);

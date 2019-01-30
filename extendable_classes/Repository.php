@@ -341,7 +341,7 @@ class Repository extends Base {
 
 	public function __call($name, $arguments) {
 		$regexs = [
-			'`getBy([A-Z][a-z0-9]+)(And|Or)([A-Z][a-z0-9]+)+`' => function($matches, &$arguments) {
+			'`getBy([A-Z][a-z0-9\_]+)(And|Or)([A-Z][a-z0-9\_]+)+`' => function($matches, &$arguments) {
 				$array = [];
 				$_matches = [];
 				unset($matches[0]);
@@ -387,7 +387,7 @@ class Repository extends Base {
 				}
 				return $result;
 			},
-			'`getBy([A-Z][a-z0-9]+)`' => function($matches, &$arguments) {
+			'`getBy([A-Z][a-z0-9\_]+)`' => function($matches, &$arguments) {
 				if($this->column_exists(strtolower($matches[1]))) {
 					$request = 'SELECT * FROM '.$this->get_table_name().' WHERE `'.strtolower($matches[1]).'`="'.$arguments[0].'"';
 					$query = $this->get_mysql()->query($request);
@@ -410,7 +410,7 @@ class Repository extends Base {
 				}
 				return [];
 			},
-			'`get([A-Za-z0-9\_]+)By([A-Z][a-z0-9]+)(And|Or)([A-Z][a-z0-9]+)+`' => function($matches, &$arguments) {
+			'`get([A-Za-z0-9\_]+)By([A-Z][a-z0-9\_]+)(And|Or)([A-Z][a-z0-9\_]+)+`' => function($matches, &$arguments) {
 
 				$_matches = [];
 				unset($matches[0]);

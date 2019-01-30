@@ -3,6 +3,7 @@
 class TestController extends Controller {
 
 	/**
+	 * @not_in_doc
 	 * @http_verb get
 	 * @return Response
 	 * @throws Exception
@@ -12,6 +13,8 @@ class TestController extends Controller {
 	}
 
 	/**
+	 * @param string $email
+	 * @param string $password
 	 * @http_verb get
 	 * @return Response
 	 * @throws Exception

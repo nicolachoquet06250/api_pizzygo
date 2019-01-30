@@ -35,7 +35,7 @@ class Router extends Base {
 			return $router->execute($callback);
 		}
 		catch (Exception $e) {
-			$catch($e, (new Base())->get_service('json'));
+			$catch($e);
 		}
 		return false;
 	}

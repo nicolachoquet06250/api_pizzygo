@@ -13,6 +13,8 @@
 
 
 		/**
+		 * @title ORDERS FOR A SHOP
+		 * @describe Renvoie toutes les commandes d'une boutique donnée.
 		 * @throws Exception
 		 */
 		protected function for_shop() {
@@ -42,9 +44,6 @@
 					if($orders) {
 						if(is_array($orders)) {
 							foreach ($orders as $i => $order) {
-//								echo '<pre>';
-//								var_dump($order);
-//								echo '</pre>';
 								$orders[$i] = $order->toArrayForJson();
 							}
 						}
@@ -57,5 +56,23 @@
 				return $this->get_response([]);
 			}
 			else return $this->get_error_controller(403)->message('You are not login');
+		}
+
+		/**
+		 * @title ORDERS FOR A CUSTOMER
+		 * @describe Renvoie les commandes passées par un client donné dans une boutique donnée.
+		 * @param int $customer
+		 * @param int $shop
+		 * @return ErrorController|Response
+		 * @throws Exception
+		 */
+		protected function for_customer() {
+			if(!$this->get('customer') && $this->get('shop')) {
+				return $this->get_error_controller(404)->message('The customer_id and shop_id are required');
+			}
+			/** @var OrderDao $order_dao */
+			$order_dao = $this->get_dao('order');
+			$orders = $order_dao->getByUser_idAndShop_id((int)$this->get('customer'), (int)$this->get('shop'));
+			return $this->get_response($orders);
 		}
 	}

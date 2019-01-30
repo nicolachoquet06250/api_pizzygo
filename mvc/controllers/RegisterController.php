@@ -24,6 +24,8 @@ class RegisterController extends Controller {
 	}
 
 	/**
+	 * @title REGISTER USER
+	 * @describe Enregistre un utilisateur et affiche l'utilisateur créé si il y a succes.
 	 * @param string $name
 	 * @param string $surname
 	 * @param string $email

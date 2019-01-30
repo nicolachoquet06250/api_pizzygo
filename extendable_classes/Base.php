@@ -156,7 +156,7 @@ class Base {
 		return Response::create($object, $type);
 	}
 
-	public function toArrayForJson() {
+	public function toArrayForJson($recursive = true) {
 		return [];
 	}
 }

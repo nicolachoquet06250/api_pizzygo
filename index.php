@@ -11,14 +11,7 @@ echo Router::create($_SERVER['REQUEST_URI'],
 		$run = $setup->run();
 		return $run;
 	},
-	function (Exception $e, JsonService $json_service) {
-		exit(
-			$json_service->encode(
-				[
-					'error' => 500,
-					'message' => $e->getMessage()
-				]
-			)
-		);
+	function (Exception $e) {
+		exit((new ErrorController('_500', []))->message($e->getMessage())->display());
 	}
 );

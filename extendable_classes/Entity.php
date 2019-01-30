@@ -306,9 +306,10 @@ class Entity extends Base {
 	}
 
 	/**
+	 * @param bool $recursive
 	 * @return array
 	 */
-	public function toArrayForJson() {
+	public function toArrayForJson($recursive = true) {
 		$array = [];
 		foreach ($this->get_fields() as $field => $details) {
 			$value = $this->get($field);

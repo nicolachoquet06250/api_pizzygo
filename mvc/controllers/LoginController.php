@@ -3,6 +3,7 @@
 class LoginController extends Controller {
 	/**
 	 * @inheritdoc
+	 * @title LOGIN USER
 	 * @param string $email
 	 * @param string $password
 	 * @alias_method login
@@ -46,6 +47,9 @@ class LoginController extends Controller {
 	}
 
 	/**
+	 * @title USER LOGGED
+	 * @describe Renvoie status=true si l'utilisateur est loggé
+	 * et status=false si'l ne l'est pas
 	 * @http_verb get
 	 * @return Response
 	 * @throws Exception
@@ -61,6 +65,7 @@ class LoginController extends Controller {
 	}
 
 	/**
+	 * @title DISCONNECT USER
 	 * @http_verb get
 	 * @return Response
 	 * @throws Exception
@@ -77,6 +82,8 @@ class LoginController extends Controller {
 	}
 
 	/**
+	 * @title LOGGED USER
+	 * @describe Renvoie l'utilisateur actuellement connecté
 	 * @http_verb get
 	 * @return Response
 	 * @throws Exception
