@@ -217,20 +217,20 @@ HTML;
 			<header>
 				<div class="container">
 					<div class="row">
-						<div class="col s12 m2 center-align">
-							<div class="col s12 hide-on-small-only" style="height: 50px;"></div>
+						<div class="col s12 l2 center-align">
+							<div class="col s12 hide-on-small-only" style="height: 20px;"></div>
 							<img class="responsive-img" 
 								style="height: 100px;" 
 								alt="logo pizzygo" 
 								src="/public/img/logo_pizzygo.png" />
 						</div>
-						<div class="col s12 m8 center-align">
-							<h1 class="title">
+						<div class="col s12 m6 l8 center-align">
+							<h1 class="title" style="font-size: 45px;">
 								Documentation Pizzygo API
 							</h1>
 						</div>
-						<div class="col s12 m2 center-align">
-							<div class="col s12 hide-on-small-only" style="height: 100px;"></div>
+						<div class="col s12 m6 l2 center-align">
+							<div class="col s12 hide-on-small-only" style="height: 50px;"></div>
 							<input type="button" class="btn orange" value="Deconnexion" onclick="window.location.href='/api/index.php/documentation/disconnect'" />
 						</div>
 					</div>
