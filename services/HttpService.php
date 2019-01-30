@@ -20,20 +20,32 @@ class HttpService extends Service {
 		$this->server = isset($_SERVER) ? $_SERVER : null;
 	}
 
+	/**
+	 * @param null|string $key
+	 * @return array|null|string
+	 */
 	public function get($key = null) {
 		if(is_null($key)) {
 			return $this->get;
 		}
-		return isset($this->get[$key]) ? $this->get[$key] : null;
+		return isset($this->get[$key]) && $this->get[$key] !== '' ? $this->get[$key] : null;
 	}
 
+	/**
+	 * @param null|string $key
+	 * @return array|null|string
+	 */
 	public function post($key) {
 		if(is_null($key)) {
 			return $this->post;
 		}
-		return isset($this->post[$key]) ? $this->post[$key] : null;
+		return isset($this->post[$key]) && $this->post[$key] !== '' ? $this->post[$key] : null;
 	}
 
+	/**
+	 * @param null|string $key
+	 * @return array|null|string
+	 */
 	public function files($key) {
 		if(is_null($key)) {
 			return $this->files;

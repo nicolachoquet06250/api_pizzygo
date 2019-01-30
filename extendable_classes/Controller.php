@@ -47,24 +47,24 @@ abstract class Controller extends Base {
 	}
 
 	/**
-	 * @param $key
-	 * @return string|null
+	 * @param string $key
+	 * @return array|string|null
 	 */
 	protected function get($key) {
 		return $this->http_service->get($key);
 	}
 
 	/**
-	 * @param $key
-	 * @return string|null
+	 * @param string $key
+	 * @return array|string|null
 	 */
 	protected function post($key) {
 		return $this->http_service->post($key);
 	}
 
 	/**
-	 * @param $key
-	 * @return mixed
+	 * @param string $key
+	 * @return array|string|null
 	 */
 	protected function files($key) {
 		return $this->http_service->files($key);
