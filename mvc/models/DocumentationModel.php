@@ -6,10 +6,10 @@
 			<div class="row" id="{{write_json_response}}">
 				<div class="col s10">
 					<div class="row">
-						<div class="col s12 m6">
+						<div class="col s12 api_url">
 							<code><pre><b>{{http_method}} [domain]/api/index.php{{url}}</b></pre></code>	
 						</div>
-						<div class="col s12 m6">
+						<div class="col s12 api_url">
 							 <code><pre><i>{{alias}}</i></pre></code>
 						</div>
 					</div>
@@ -20,7 +20,7 @@
 				<div class="col s12">
 					{{input_fields}}
 				</div>
-				<div class="col s12" style="max-height: 300px; overflow: scroll;">
+				<div class="col s12" style="max-height: 300px; overflow: auto;">
 					<pre class="write_json_response {{write_json_response}}"><code></code></pre>
 				</div>
 			</div>
@@ -206,10 +206,16 @@ HTML;
 				            hljs.highlightBlock(document.querySelector('.write_json_response' + class_data));
 				        });
 				    };
+				    let resize_urls = () => {
+				         $('.api_url').css('max-width', $(document).width() + 50 + 'px').css('overflow', 'auto');
+				    };
 				    
 				    $('input[type=button]').on('click', elem => {
 				        valid_form($(elem.target).data('http_verb'), $(elem.target).data('class'), $(elem.target).data('url'));
 				    });
+				    
+				    resize_urls();
+				    $(window).resize(resize_urls);
 				});
 			  </script>
 		</head>
