@@ -280,7 +280,7 @@ HTML;
 		public function create_session(UserEntity $user) {
 			/** @var SessionService $session_service */
 			$session_service = $this->get_service('session');
-			$session_service->set('doc_admin', []);
+			$session_service->set('doc_admin', $user->toArrayForJson());
 		}
 
 		/**
