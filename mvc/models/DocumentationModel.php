@@ -5,7 +5,14 @@
 		private $section_template = <<<HTML
 			<div class="row" id="{{write_json_response}}">
 				<div class="col s10">
-					<code><pre><b>{{http_method}} [domain]/api/index.php{{url}}</b> <i>{{alias}}</i></pre></code>
+					<div class="row">
+						<div class="col s12 m6">
+							<code><pre><b>{{http_method}} [domain]/api/index.php{{url}}</b></pre></code>	
+						</div>
+						<div class="col s12 m6">
+							 <code><pre><i>{{alias}}</i></pre></code>
+						</div>
+					</div>
 				</div>
 				<div class="col s2">
 					<span data-badge-caption="" class="http-code-{{write_json_response}}"></span>
@@ -210,13 +217,20 @@ HTML;
 			<header>
 				<div class="container">
 					<div class="row">
-						<div class="col s10">
+						<div class="col s12 m2 center-align">
+							<div class="col s12 hide-on-small-only" style="height: 50px;"></div>
+							<img class="responsive-img" 
+								style="height: 100px;" 
+								alt="logo pizzygo" 
+								src="/public/img/logo_pizzygo.png" />
+						</div>
+						<div class="col s12 m8 center-align">
 							<h1 class="title">
-								<img class="responsive-img" style="height: 100px;" alt="logo pizzygo" src="/public/img/logo_pizzygo.png" />
 								Documentation Pizzygo API
 							</h1>
 						</div>
-						<div class="col s2" style="padding-top: 100px;">
+						<div class="col s12 m2 center-align">
+							<div class="col s12 hide-on-small-only" style="height: 100px;"></div>
 							<input type="button" class="btn orange" value="Deconnexion" onclick="window.location.href='/api/index.php/documentation/disconnect'" />
 						</div>
 					</div>
