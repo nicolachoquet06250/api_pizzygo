@@ -1,6 +1,13 @@
 <?php
 		
 	class OrderController extends Controller {
+		/** @var SessionService $session_service */
+		protected $session_service;
+
+		public function __construct($action, $params) {
+			parent::__construct($action, $params);
+			$this->session_service = $this->get_service('session');
+		}
 
 		/**
 		 * @return Response
@@ -74,5 +81,39 @@
 			$order_dao = $this->get_dao('order');
 			$orders = $order_dao->getByUser_idAndShop_id((int)$this->get('customer'), (int)$this->get('shop'));
 			return $this->get_response($orders);
+		}
+
+		/**
+		 * @throws Exception
+		 */
+		protected function for_user() {
+			if(!$this->session_service->has_key('user')) {
+				return $this->get_error_controller(503)
+							->message('Vous n\'êtes pas connécté !!');
+			}
+			$id = (int)$this->session_service->get('user')['id'];
+			/** @var UserDao $user_dao */
+			$user_dao = $this->get_dao('user');
+			/** @var UserEntity $user */
+			$user = $user_dao->getById($id)[0];
+			$roles = [];
+			foreach ($user->get_roles() as $i => $role) {
+				$roles[$i] = $role['role'];
+			}
+			if(in_array('role_vendor', $roles)) {
+				/** @var OrderDao $order_dao */
+				$order_dao = $this->get_dao('order');
+				$orders = $order_dao->getBy('user_id', $id);
+				/**
+				 * @var int $i
+				 * @var OrderEntity $order
+				 */
+				foreach ($orders as $i => $order) {
+					$orders[$i] = $order->toArrayForJson();
+				}
+				return $this->get_response($orders);
+			}
+			return $this->get_error_controller(503)
+						->message('Vous n\'avez pas les droits nécéssaires pour accéder à cet url !!');
 		}
 	}

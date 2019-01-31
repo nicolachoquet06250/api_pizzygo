@@ -71,6 +71,15 @@ class ErrorController extends Controller {
 	 * @return Response
 	 * @throws Exception
 	 */
+	protected function _503() {
+		$this->code(503);
+		return $this->index();
+	}
+
+	/**
+	 * @return Response
+	 * @throws Exception
+	 */
 	protected function _501() {
 		$this->code(501);
 		return $this->index();
