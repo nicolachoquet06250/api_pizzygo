@@ -1,6 +1,6 @@
 <?php
 
-class HttpService extends Service {
+class HttpService extends Service implements IHttpService {
 	protected $get;
 	protected $post;
 	protected $files;

@@ -1,6 +1,6 @@
 <?php
 
-class Threadable extends Base {
+class Threadable extends Base implements IThreadable {
 	protected $thread_pid;
 	protected $execution_time;
 	public function __construct() {

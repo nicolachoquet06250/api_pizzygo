@@ -1,6 +1,6 @@
 <?php
 
-class Repository extends Base {
+class Repository extends Base implements IRepository {
 	private $entity_class;
 	private $mysql;
 	protected $table_name;

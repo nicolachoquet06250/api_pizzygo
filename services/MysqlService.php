@@ -1,6 +1,6 @@
 <?php
 
-class MysqlService extends Service {
+class MysqlService extends Service implements IMysqlService {
 	private static $mysql = null;
 
 	/**

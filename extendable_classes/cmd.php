@@ -1,6 +1,6 @@
 <?php
 
-class cmd extends Base {
+class cmd extends Base implements ICmd {
 	private $args;
 	private $mysql;
 
@@ -14,7 +14,7 @@ class cmd extends Base {
 		$this->args = $args;
 		$this->clean_args();
 		/** @var MysqlService $mysql_service */
-		$mysql_service = $this->get_service('mysql');
+		$mysql_service = $this->get_service('mysqlConf');
 		$this->mysql = $mysql_service->get_connector();
 	}
 

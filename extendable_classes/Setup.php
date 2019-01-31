@@ -1,6 +1,6 @@
 <?php
 
-class Setup extends Base {
+class Setup extends Base implements ISetup {
 	private $controller;
 	/** @var JsonService $json_service */
 	private $json_service;
@@ -24,10 +24,10 @@ class Setup extends Base {
 	}
 
 	/**
+	 * @param null $arg
 	 * @return false|string
-	 * @throws Exception
 	 */
-	public function run() {
+	public function run($arg = null) {
 		$controller = ucfirst($this->controller).'Controller';
 		if(isset($_GET['action'])) {
 			$action = $_GET['action'];

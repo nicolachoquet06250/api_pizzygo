@@ -1,6 +1,6 @@
 <?php
 
-class Conf {
+class Conf extends Base implements IConf {
 	protected $conf;
 	public function get($key) {
 		return $this->has_property($key) ? $this->conf[$key] : null;

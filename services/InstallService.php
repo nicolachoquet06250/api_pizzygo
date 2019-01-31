@@ -1,6 +1,6 @@
 <?php
 
-class InstallService extends Service {
+class InstallService extends Service implements IInstallService {
 	/** @var Conf $mysql_conf */
 	protected $mysql_conf;
 

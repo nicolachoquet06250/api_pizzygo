@@ -10,8 +10,8 @@ class LoginController extends Controller {
 	 * @http_verb get
 	 * @throws Exception
 	 */
-	protected function index() {
-		return $this->login();
+	protected function index(SessionService $session_service = null, LoginModel $model = null) {
+		return $this->login($session_service, $model);
 	}
 
 	/**
@@ -21,13 +21,9 @@ class LoginController extends Controller {
 	 * @return Response|ErrorController
 	 * @throws Exception
 	 */
-	protected function login() {
-		/** @var SessionService $session_service */
-		$session_service = $this->get_service('session');
-		/** @var LoginModel $model */
+	protected function login(SessionService $session_service, LoginModel $model) {
 		if(!$session_service->has_key('user')) {
 			if($this->get('email') && $this->get('password')) {
-				$model = $this->get_model('login');
 				$user  = $model->login($this->get('email'), $this->get('password'));
 				if ($user) {
 					if (is_object($user) && $model->register_session($user)) {
@@ -54,9 +50,7 @@ class LoginController extends Controller {
 	 * @return Response
 	 * @throws Exception
 	 */
-	protected function logged() {
-		/** @var LoginModel $model */
-		$model = $this->get_model('login');
+	protected function logged(LoginModel $model) {
 		return $this->get_response(
 			[
 				'logged' => $model->isLogged()
@@ -70,10 +64,7 @@ class LoginController extends Controller {
 	 * @return Response
 	 * @throws Exception
 	 */
-	protected function disconnect() {
-		/** @var LoginModel $model */
-		$model = $this->get_model('login');
-
+	protected function disconnect(LoginModel $model) {
 		return $this->get_response(
 			[
 				'disconnected' => $model->delete_session()
@@ -88,10 +79,7 @@ class LoginController extends Controller {
 	 * @return Response
 	 * @throws Exception
 	 */
-	protected function logged_user() {
-		/** @var SessionService $session_service */
-		$session_service = $this->get_service('session');
-
+	protected function logged_user(SessionService $session_service) {
 		return $this->get_response(($session_service->has_key('user') ? [
 			'status' => true,
 			'user' => $session_service->get('user')

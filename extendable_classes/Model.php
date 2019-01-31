@@ -1,3 +1,3 @@
 <?php
 
-class Model extends Base {}
+class Model extends Base implements IModel {}

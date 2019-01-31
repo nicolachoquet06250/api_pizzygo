@@ -1,12 +1,9 @@
 <?php
 
-class Response extends Base {
+class Response extends Base implements IResponse {
 	protected $element;
 	protected $header_type = self::JSON;
 	protected $parsed_element;
-	const HTML = 'text/html';
-	const TEXT = 'plain/text';
-	const JSON = 'application/json';
 
 	/**
 	 * @param $element

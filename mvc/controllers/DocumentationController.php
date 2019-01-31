@@ -2,20 +2,17 @@
 
 	/**
 	 * Class DocumentationController
-	 * @not_in_doc
 	 */
 	class DocumentationController extends Controller {
 		/**
+		 * @title DOCUMENTATION
+		 * @describe Injection de dépendences disponible :
+		 *  - Par propriété grace à la PHPDoc de la propriété
+		 *  - Par paramètres de méthode dans les controlleurs en definissant le type voulu devant la variable.
 		 * @return Response
 		 * @throws Exception
 		 */
-		protected function index() {
-			/** @var SessionService $session_service */
-			$session_service = $this->get_service('session');
-			/** @var HttpService $http_service */
-			$http_service = $this->get_service('http');
-			/** @var DocumentationModel $model */
-			$model  = $this->get_model('documentation');
+		protected function index(SessionService $session_service = null, HttpService $http_service = null, DocumentationModel $model = null) {
 			if($http_service->post('email') && $http_service->post('password')) {
 				/** @var UserDao $user_dao */
 				$user_dao = $this->get_dao('user');
@@ -39,10 +36,9 @@
 
 		/**
 		 * @throws Exception
+		 * @not_in_doc
 		 */
-		protected function disconnect() {
-			/** @var DocumentationModel $model */
-			$model = $this->get_model('documentation');
+		protected function disconnect(DocumentationModel $model) {
 			if($model->delete_session()) {
 				header('location: /api/index.php/documentation');
 			}

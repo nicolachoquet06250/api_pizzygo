@@ -1,6 +1,6 @@
 <?php
 
-class Router extends Base {
+class Router extends Base implements IRouter {
 	/** @var HttpService $http */
 	private $uri, $http;
 

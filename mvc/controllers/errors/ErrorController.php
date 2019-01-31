@@ -10,6 +10,12 @@ class ErrorController extends Controller {
 	 */
 	protected function index() {
 		$this->write_header();
+		var_dump($this->get_response(
+			[
+				'code' => $this->code,
+				'message' => $this->message,
+			]
+		));
 		return $this->get_response(
 			[
 				'code' => $this->code,

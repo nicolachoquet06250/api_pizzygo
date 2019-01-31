@@ -1,6 +1,6 @@
 <?php
 
-class Entity extends Base {
+class Entity extends Base implements IEntity {
 	private $fields = [];
 	protected $primary_key;
 	private $mysql;

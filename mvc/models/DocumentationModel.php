@@ -388,4 +388,8 @@ HTML;
 			$session_service->remove('doc_admin');
 			return !$session_service->has_key('doc_admin');
 		}
+
+		public function test() {
+			var_dump('HELLOOOOOOOOOOOOOOOOOOOO');
+		}
 	}

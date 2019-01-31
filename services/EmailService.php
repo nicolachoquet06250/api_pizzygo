@@ -1,6 +1,6 @@
 <?php
 
-class EmailService extends Service {
+class EmailService extends Service implements IEmailService {
 	private $credentials;
 	/** @var \PHPMailer\PHPMailer\PHPMailer $mailer */
 	private $mailer;

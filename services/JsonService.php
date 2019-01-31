@@ -1,6 +1,6 @@
 <?php
 
-class JsonService extends Service {
+class JsonService extends Service implements IJsonService {
 
 	public function initialize_after_injection() {}
 

@@ -1,6 +1,6 @@
 <?php
 
-class Command extends Base {
+class Command extends Base implements ICommand {
 	private static $default_action = 'index';
 	private static $default_command = 'help';
 	public static function clean_args($args) {

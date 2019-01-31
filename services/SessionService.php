@@ -1,7 +1,7 @@
 <?php
 session_start();
 
-class SessionService extends Service {
+class SessionService extends Service implements ISessionService {
 
 	/**
 	 * @throws Exception
@@ -11,8 +11,9 @@ class SessionService extends Service {
 	/**
 	 * @param string $key
 	 * @param mixed $value
+	 * @param null $domain
 	 */
-	public function set(string $key, $value) {
+	public function set(string $key, $value, $domain = null) {
 		$_SESSION[$key] = $value;
 	}
 

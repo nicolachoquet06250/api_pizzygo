@@ -1,6 +1,6 @@
 <?php
 
-class Base {
+class Base implements IBase {
 	private static $confs = [];
 
 	protected function get_controllers() {
@@ -39,6 +39,7 @@ class Base {
 	protected function get_service(string $service) {
 		$service = ucfirst($service).'Service';
 		if(file_exists(__DIR__.'/../services/'.$service.'.php')) {
+			require_once __DIR__.'/../services/interfaces/I'.$service.'.php';
 			require_once __DIR__.'/../services/'.$service.'.php';
 			/** @var Service $o_service */
 			$o_service = new $service();
@@ -118,6 +119,7 @@ class Base {
 	 * @throws Exception
 	 */
 	protected function get_conf(string $conf) {
+		$conf = ucfirst($conf).'Conf';
 		if(file_exists(__DIR__.'/../conf/'.$conf.'.php')) {
 			if(!isset(self::$confs[$conf])) {
 				require_once __DIR__.'/../conf/'.$conf.'.php';
