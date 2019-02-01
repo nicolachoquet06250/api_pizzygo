@@ -391,5 +391,6 @@ HTML;
 
 		public function test() {
 			var_dump('HELLOOOOOOOOOOOOOOOOOOOO');
+			exit();
 		}
 	}

@@ -39,6 +39,7 @@
 		 * @not_in_doc
 		 */
 		protected function disconnect(DocumentationModel $model) {
+			$model->test();
 			if($model->delete_session()) {
 				header('location: /api/index.php/documentation');
 			}

@@ -24,16 +24,9 @@
 		 * @describe Renvoie toutes les commandes d'une boutique donnée.
 		 * @throws Exception
 		 */
-		protected function for_shop() {
-			/** @var SessionService $session_service */
-			$session_service = $this->get_service('session');
-			/**
-			 * @var ShopDao $shop_dao
-			 * @var UserDao $user_dao
-			 */
-			list($shop_dao, $user_dao) = [$this->get_dao('shop'), $this->get_dao('user')];
+		protected function for_shop(ShopDao $shop_dao, UserDao $user_dao, OrderDao $order_dao) {
 			/** @var UserEntity|bool $connected_user */
-			$connected_user = $user_dao->getById($session_service->get('user')['id']);
+			$connected_user = $user_dao->getById($this->session_service->get('user')['id']);
 			if(is_array($connected_user) && count($connected_user) === 1) {
 				$connected_user = $connected_user[0];
 			}
@@ -44,8 +37,6 @@
 					$shop = $shop[0];
 				}
 				if($shop) {
-					/** @var OrderDao $order_dao */
-					$order_dao = $this->get_dao('order');
 					/** @var OrderEntity|OrderEntity[]|bool $orders */
 					$orders = $order_dao->getBy('shop_id', $shop->get('id'));
 					if($orders) {
@@ -73,27 +64,26 @@
 		 * @return ErrorController|Response
 		 * @throws Exception
 		 */
-		protected function for_customer() {
+		protected function for_customer(OrderDao $order_dao) {
 			if(!$this->get('customer') && $this->get('shop')) {
 				return $this->get_error_controller(404)->message('The customer_id and shop_id are required');
 			}
-			/** @var OrderDao $order_dao */
-			$order_dao = $this->get_dao('order');
 			$orders = $order_dao->getByUser_idAndShop_id((int)$this->get('customer'), (int)$this->get('shop'));
+			if(!$orders) {
+				$orders = [];
+			}
 			return $this->get_response($orders);
 		}
 
 		/**
 		 * @throws Exception
 		 */
-		protected function for_user() {
+		protected function for_user(UserDao $user_dao, OrderDao $order_dao) {
 			if(!$this->session_service->has_key('user')) {
 				return $this->get_error_controller(503)
 							->message('Vous n\'êtes pas connécté !!');
 			}
 			$id = (int)$this->session_service->get('user')['id'];
-			/** @var UserDao $user_dao */
-			$user_dao = $this->get_dao('user');
 			/** @var UserEntity $user */
 			$user = $user_dao->getById($id)[0];
 			$roles = [];
@@ -101,8 +91,6 @@
 				$roles[$i] = $role['role'];
 			}
 			if(in_array('role_vendor', $roles)) {
-				/** @var OrderDao $order_dao */
-				$order_dao = $this->get_dao('order');
 				$orders = $order_dao->getBy('user_id', $id);
 				/**
 				 * @var int $i

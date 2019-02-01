@@ -19,8 +19,8 @@ class RegisterController extends Controller {
 	 * @not_in_doc
 	 * @throws Exception
 	 */
-	protected function index() {
-		return $this->register();
+	protected function index(RegisterModel $model = null, HttpService $httpService = null) {
+		return $this->register($model, $httpService);
 	}
 
 	/**
@@ -40,10 +40,7 @@ class RegisterController extends Controller {
 	 * @return Response
 	 * @throws Exception
 	 */
-	protected function register() {
-		/** @var RegisterModel $model */
-		$model = $this->get_model('register');
-		$this->get_service('http');
+	protected function register(RegisterModel $model, HttpService $httpService) {
 		$infos = [];
 		foreach ($_POST as $key => $value) {
 			if($key === 'describe') {
