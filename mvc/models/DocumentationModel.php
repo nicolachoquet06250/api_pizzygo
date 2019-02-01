@@ -117,7 +117,7 @@ HTML;
 				$class = $controller;
 				$controller = ucfirst($controller).'Controller';
 				if(is_file(__DIR__.'/../controllers/'.$controller.'.php')) {
-					require_once __DIR__.'../controllers/'.$controller.'.php';
+					require_once __DIR__.'/../controllers/'.$controller.'.php';
 					$ref     = new ReflectionClass($controller);
 					$class_doc = $ref->getDocComment();
 					$class_doc = str_replace('/**'.$retour, '', $class_doc);
