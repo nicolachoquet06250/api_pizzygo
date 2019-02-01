@@ -44,6 +44,16 @@
 			</div>
 HTML;
 
+		/**
+		 * @param $http_verb
+		 * @param $url
+		 * @param array $params
+		 * @param null $alias
+		 * @param string $title
+		 * @param string $describe
+		 * @return mixed
+		 * @throws Exception
+		 */
 		private function get_section_template($http_verb, $url, $params = [], $alias = null, $title = '', $describe = '') {
 			$input_fields = '';
 			foreach ($params as $param => $type) {
@@ -65,8 +75,10 @@ HTML;
 			}
 			$input_fields .= '<input type="button" class="btn orange" data-url="/api/index.php'.$url.(!is_null($alias) ? '/'.$alias : '').'" value="Envoyer" data-http_verb="'.$http_verb.'" data-class="'.str_replace('/', '_', $url).(!is_null($alias) ? '_'.$alias : '').'" />';
 
+			/** @var OsService $service_os */
+			$service_os = $this->get_service('ok');
 			$describe = str_replace(' * ', '', $describe);
-			$describe = str_replace(($this->get_service('os')->IAmOnUnixSystem() ? "\n" : "\n\r"), '<br>', $describe);
+			$describe = str_replace($service_os->get_chariot_return(), '<br>', $describe);
 			$describe = str_replace("\t", '', $describe);
 
 			return str_replace(
@@ -97,7 +109,9 @@ HTML;
 		 * @throws Exception
 		 */
 		private function generate_routes() {
-			$retour = $this->get_service('os')->IAmOnUnixSystem() ? "\n" : "\r\n";
+			/** @var OsService $service_os */
+			$service_os = $this->get_service('os');
+			$retour = $service_os->get_chariot_return();
 			$routes = [];
 			foreach ($this->get_controllers() as $controller) {
 				$class = $controller;
@@ -329,6 +343,17 @@ HTML;
 					  crossorigin="anonymous"></script>
 		</head>
 		<body>
+			<nav>
+				<div class="nav-wrapper">
+					<a href="#" class="brand-logo">
+						<img src="/public/img/logo_pizzygo.png" style="padding-left: 10px;height: 65px;" alt="logo" />
+					</a>
+					<ul id="nav-mobile" class="right hide-on-med-and-down">
+						<li><a href="sass.html" class="active">Développeur</a></li>
+						<li><a href="badges.html">Utilisateur</a></li>
+				  	</ul>
+				</div>
+			</nav>
 			<header>
 				<div class="container">
 					<div class="col s12">
@@ -387,5 +412,14 @@ HTML;
 			$session_service = $this->get_service('session');
 			$session_service->remove('doc_admin');
 			return !$session_service->has_key('doc_admin');
+		}
+
+		public function get_user_doc_content() {
+			if(is_file(__DIR__.'/../views/documentation.html')) {
+				return file_get_contents(__DIR__.'/../views/documentation.html');
+			}
+			else {
+				return '<center><b>La vue documentation n\'existe pas</b></center>';
+			}
 		}
 	}

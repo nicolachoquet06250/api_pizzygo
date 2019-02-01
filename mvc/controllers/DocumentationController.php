@@ -12,10 +12,18 @@
 		 * @return Response
 		 * @throws Exception
 		 */
-		protected function index(SessionService $session_service = null, HttpService $http_service = null, DocumentationModel $model = null) {
+		protected function index(SessionService $session_service = null, HttpService $http_service = null,
+								 DocumentationModel $model = null, UserDao $user_dao = null) {
+			return $this->developer($model, $http_service, $user_dao, $session_service);
+		}
+
+		/**
+		 * @return Response
+		 * @throws ReflectionException
+		 * @throws Exception
+		 */
+		protected function developer(DocumentationModel $model, HttpService $http_service, UserDao $user_dao, SessionService $session_service) {
 			if($http_service->post('email') && $http_service->post('password')) {
-				/** @var UserDao $user_dao */
-				$user_dao = $this->get_dao('user');
 				/** @var UserEntity|bool $user */
 				$user = $user_dao->getByEmailAndPassword(
 					$this->http_service->post('email'),
@@ -32,6 +40,14 @@
 			$object = $session_service->has_key('doc_admin') ? $model->get_doc_content() : $model->get_connexion_content();
 
 			return $this->get_response($object, Response::HTML);
+		}
+
+		/**
+		 * @return Response
+		 * @throws Exception
+		 */
+		protected function user(DocumentationModel $model) {
+			return $this->get_response($model->get_user_doc_content(), Response::HTML);
 		}
 
 		/**
