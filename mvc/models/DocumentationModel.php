@@ -76,7 +76,7 @@ HTML;
 			$input_fields .= '<input type="button" class="btn orange" data-url="/api/index.php'.$url.(!is_null($alias) ? '/'.$alias : '').'" value="Envoyer" data-http_verb="'.$http_verb.'" data-class="'.str_replace('/', '_', $url).(!is_null($alias) ? '_'.$alias : '').'" />';
 
 			/** @var OsService $service_os */
-			$service_os = $this->get_service('ok');
+			$service_os = $this->get_service('os');
 			$describe = str_replace(' * ', '', $describe);
 			$describe = str_replace($service_os->get_chariot_return(), '<br>', $describe);
 			$describe = str_replace("\t", '', $describe);
@@ -117,7 +117,7 @@ HTML;
 				$class = $controller;
 				$controller = ucfirst($controller).'Controller';
 				if(is_file(__DIR__.'/../controllers/'.$controller.'.php')) {
-					require_once __DIR__.'/../controllers/'.$controller.'.php';
+					require_once __DIR__.'../controllers/'.$controller.'.php';
 					$ref     = new ReflectionClass($controller);
 					$class_doc = $ref->getDocComment();
 					$class_doc = str_replace('/**'.$retour, '', $class_doc);
@@ -184,7 +184,7 @@ HTML;
 								}
 
 								if(!strstr($line, '@')) {
-									$describe .= ($this->get_service('os')->IAmOnUnixSystem() ? "\n" : "\n\r").$line;
+									$describe .= $service_os->get_chariot_return().$line;
 								}
 							}
 
@@ -230,28 +230,28 @@ HTML;
 
 			$object = <<<HTML
 	<DOCTYPE html>
-	<html>
+	<html lang="fr">
 		<head>
         	<meta name="viewport" content="width=device-width, initial-scale=1">
 			<meta charset="utf-8" />
 			<title>Documentation Pizzygo API</title>
-			  <link rel="icon" href="/public/img/logo_pizzygo.png" />
-			  <link rel="stylesheet" href="/public/libs/materialize/css/materialize.min.css" />
-			  <script src="/public/libs/materialize/js/materialize.min.js"></script>
-			  <script src="https://code.jquery.com/jquery-3.3.1.js"
+			<link rel="icon" href="/public/img/logo_pizzygo.png" />
+			<link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+			<link rel="stylesheet" href="/public/libs/materialize/css/materialize.min.css" />
+			<script src="https://code.jquery.com/jquery-3.3.1.js"
 			          integrity="sha256-2Kok7MbOyxpgUVvAk/HJ2jigOSYS2auK4Pfzbm7uH60="
 					  crossorigin="anonymous"></script>
-			  <link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/styles/ocean.min.css">
-			  <script src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/highlight.min.js"></script>
-			  <script>
+			<script src="/public/libs/materialize/js/materialize.min.js"></script>
+			<link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/styles/ocean.min.css">
+			<script src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/highlight.min.js"></script>
+			<script>
 				$(window).ready(() => {
 				    let valid_form = (http_verb, class_data, url) => {
 				        let inputs = $('.' + class_data);
 				        let data = {};
 				        inputs.each((key, input) => {
 				            let field = $(input).attr('placeholder');
-				            let value = $(input).val();
-				            data[field] = value;
+				            data[field] = $(input).val();
 				        });
 				        $.ajax({
 				        	beforeSend: () => {
@@ -286,28 +286,36 @@ HTML;
 				    
 				    resize_urls();
 				    $(window).resize(resize_urls);
+				    $('.sidenav').sidenav();
 				});
 			  </script>
 		</head>
 		<body>
+			<nav>
+				<div class="nav-wrapper">
+					<a href="#" class="brand-logo">
+						<img src="/public/img/logo_pizzygo.png" style="padding-left: 10px;height: 65px;" alt="logo" />
+					</a>
+            		<a href="#" data-target="mobile-demo" class="sidenav-trigger"><i class="material-icons">menu</i></a>
+					<ul id="nav-mobile" class="right hide-on-med-and-down">
+						<li class="active"><a href="/api/index.php/documentation/developer">Développeur</a></li>
+                		<li><a href="/api/index.php/documentation/user">Utilisateur</a></li>
+                		<li><a href="/api/index.php/documentation/disconnect">Déconnection</a></li>
+					</ul>
+					<ul class="sidenav" id="mobile-demo">
+						<li class="active"><a href="/api/index.php/documentation/developer">Développeur</a></li>
+						<li><a href="/api/index.php/documentation/user">Utilisateur</a></li>
+                		<li><a href="/api/index.php/documentation/disconnect">Déconnection</a></li>
+					</ul>
+				</div>
+			</nav>
 			<header>
 				<div class="container">
 					<div class="row">
-						<div class="col s12 l2 center-align">
-							<div class="col s12 hide-on-small-only" style="height: 20px;"></div>
-							<img class="responsive-img" 
-								style="height: 100px;" 
-								alt="logo pizzygo" 
-								src="/public/img/logo_pizzygo.png" />
-						</div>
-						<div class="col s12 m6 l8 center-align">
+						<div class="col s12 center-align">
 							<h1 class="title" style="font-size: 45px;">
 								Documentation Pizzygo API
 							</h1>
-						</div>
-						<div class="col s12 m6 l2 center-align">
-							<div class="col s12 hide-on-small-only" style="height: 50px;"></div>
-							<input type="button" class="btn orange" value="Deconnexion" onclick="window.location.href='/api/index.php/documentation/disconnect'" />
 						</div>
 					</div>
 				</div>
@@ -330,17 +338,23 @@ HTML;
 			$color_class = $error_message === '' ? '' : 'red-text';
 			$content = <<<HTML
 	<DOCTYPE html>
-	<html>
+	<html lang="fr">
 		<head>
         	<meta name="viewport" content="width=device-width, initial-scale=1">
 			<meta charset="utf-8" />
 			<title>Documentation Pizzygo API</title>
 			<link rel="icon" href="/public/img/logo_pizzygo.png" />
+			<link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
 			<link rel="stylesheet" href="/public/libs/materialize/css/materialize.min.css" />
-			<script src="/public/libs/materialize/js/materialize.min.js"></script>
 			<script src="https://code.jquery.com/jquery-3.3.1.js"
 			          integrity="sha256-2Kok7MbOyxpgUVvAk/HJ2jigOSYS2auK4Pfzbm7uH60="
 					  crossorigin="anonymous"></script>
+			<script src="/public/libs/materialize/js/materialize.min.js"></script>
+			<script>
+				$(window).ready(() => {
+					$('.sidenav').sidenav();
+				});
+			</script>
 		</head>
 		<body>
 			<nav>
@@ -348,15 +362,20 @@ HTML;
 					<a href="#" class="brand-logo">
 						<img src="/public/img/logo_pizzygo.png" style="padding-left: 10px;height: 65px;" alt="logo" />
 					</a>
+            		<a href="#" data-target="mobile-demo" class="sidenav-trigger"><i class="material-icons">menu</i></a>
 					<ul id="nav-mobile" class="right hide-on-med-and-down">
-						<li><a href="sass.html" class="active">Développeur</a></li>
-						<li><a href="badges.html">Utilisateur</a></li>
+						<li class="active"><a href="/api/index.php/documentation/developer">Développeur</a></li>
+                		<li><a href="/api/index.php/documentation/user">Utilisateur</a></li>
 				  	</ul>
+				  	<ul class="sidenav" id="mobile-demo">
+						<li class="active"><a href="/api/index.php/documentation/developer">Développeur</a></li>
+						<li><a href="/api/index.php/documentation/user">Utilisateur</a></li>
+					</ul>
 				</div>
 			</nav>
 			<header>
 				<div class="container">
-					<div class="col s12">
+					<div class="col s12 center-align">
 						<h1 class="title">Connexion</h1>
 					</div>
 				</div>
@@ -379,7 +398,7 @@ HTML;
 							</div>
 							<div class="col s12 {$color_class}">{$error_message}</div>
 							<div class="col s12 m4 offset-m4">
-								<div class="btn-block">
+								<div class="btn-block center-align">
 									<input type="submit" id="connexion" class="btn orange" value="Se connected" />
 								</div>
 							</div>
