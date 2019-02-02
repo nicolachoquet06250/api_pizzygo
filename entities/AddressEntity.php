@@ -17,14 +17,14 @@ class AddressEntity extends Entity {
 	 * @var int $user_id
 	 * @not_null
 	 * @size(11)
-	 * @entity UserEntity
+	 * @entity user
 	 */
 	protected $user_id = 0;
 	/**
 	 * @var int $type_id
 	 * @not_null
 	 * @size(11)
-	 * @entity Address_typeEntity
+	 * @entity address_type
 	 */
 	protected $type_id = 0;
 

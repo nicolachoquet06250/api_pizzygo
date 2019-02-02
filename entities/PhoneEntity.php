@@ -16,7 +16,7 @@ class PhoneEntity extends Entity {
 	/**
 	 * @var int $user_id
 	 * @not_null
-	 * @entity UserEntity
+	 * @entity user
 	 * @size(11)
 	 */
 	protected $user_id = 0;

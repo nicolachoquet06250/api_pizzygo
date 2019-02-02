@@ -1,24 +1,6 @@
 <?php
 
-spl_autoload_register(function ($class) {
-	$charge = [
-		'model' => __DIR__.'/../mvc/models/',
-		'service' => __DIR__.'/../services/',
-		'dao' => __DIR__.'/../dao/',
-		'entity' => __DIR__.'/../entities/',
-		'conf' => __DIR__.'/../conf',
-	];
-
-	foreach (array_keys($charge) as $class_type) {
-		if(strstr($class, ucfirst($class_type))) {
-			if(is_file(realpath($charge[$class_type]).'/interfaces/I'.$class.'.php')) {
-				require_once realpath($charge[$class_type]).'/interfaces/I'.$class.'.php';
-			}
-			require_once realpath($charge[$class_type]).'/'.$class.'.php';
-			break;
-		}
-	}
-});
+require_once __DIR__.'/autoload_for_dependencies_injection.php';
 
 abstract class Controller extends Base implements IController {
 	private $method;
@@ -57,102 +39,14 @@ abstract class Controller extends Base implements IController {
 	 * @param null $arg
 	 * @return string
 	 * @throws ReflectionException
+	 * @throws Exception
 	 */
 	public function run($arg = null) {
 		$method = $this->method;
 		if($this->http_error) {
 			return $this->http_error->display();
 		}
-		if(get_class($this) !== ErrorController::class) {
-			$ref_class             = new ReflectionClass(get_class($this));
-			$ref_method            = $ref_class->getMethod($method);
-			$ref_method_parameters = $ref_method->getParameters();
-
-			$method_parameters = [];
-
-			$_properties = [];
-
-			$properties = $ref_class->getProperties();
-
-			foreach ($properties as $property) {
-				if ($property->isPublic()) {
-					preg_match('`@var ([A-Za-z0-9\_]+) \$([A-Za-z0-9\_]+)`', $property->getDocComment(), $matches);
-					if (!empty($matches)) {
-						$_properties[$matches[2]] = $matches[1];
-					}
-				}
-			}
-
-			foreach ($ref_method_parameters as $ref_method_parameter) {
-				$class      = $ref_method_parameter->getClass();
-				$class_name = $class->getName();
-
-				switch ($class->getParentClass()->getName()) {
-					case 'Service':
-						$class_name          = str_replace($class->getParentClass()->getName(), '', $class_name);
-						$class_name          = strtolower($class_name);
-						$method_parameters[] = '$this->get_'.strtolower($class->getParentClass()->getName()).'(\''.$class_name.'\')';
-						break;
-					case 'Conf':
-						$class_name          = str_replace($class->getParentClass()->getName(), '', $class_name);
-						$class_name          = strtolower($class_name);
-						$method_parameters[] = '$this->get_'.strtolower($class->getParentClass()->getName()).'(\''.$class_name.'\')';
-						break;
-					case 'BaseModel':
-						$class_name          = str_replace('Model', '', $class_name);
-						$class_name          = strtolower($class_name);
-						$method_parameters[] = '$this->get_model(\''.$class_name.'\')';
-						break;
-					case 'Repository':
-						$class_name          = str_replace('Dao', '', $class_name);
-						$class_name          = strtolower($class_name);
-						$method_parameters[] = '$this->get_'.strtolower($class->getParentClass()->getName()).'(\''.$class_name.'\')';
-						break;
-					case 'Entity':
-						$class_name          = str_replace($class->getParentClass()->getName(), '', $class_name);
-						$class_name          = strtolower($class_name);
-						$method_parameters[] = '$this->get_'.strtolower($class->getParentClass()->getName()).'(\''.$class_name.'\')';
-						break;
-					default:
-						break;
-				}
-			}
-
-			foreach ($_properties as $property => $_class) {
-				if (strstr($_class, 'Service')) {
-					$class_name          = str_replace('Service', '', $_class);
-					$class_name          = strtolower($class_name);
-					$method_name         = 'get_'.strtolower($_class->getParentClass()->getName());
-					$method_parameters[] = $this->$method_name($class_name);
-				} elseif (strstr($_class, 'Conf')) {
-					$class_name      = str_replace('Conf', '', $_class);
-					$class_name      = strtolower($class_name);
-					$method_name     = 'get_service';
-					$this->$property = $this->$method_name($class_name);
-				} elseif (strstr($_class, 'Model')) {
-					$class_name      = str_replace('Model', '', $_class);
-					$class_name      = strtolower($class_name);
-					$method_name     = 'get_model';
-					$this->$property = $this->$method_name($class_name);
-				} elseif (strstr($_class, 'Dao')) {
-					$class_name      = str_replace('Dao', '', $_class);
-					$class_name      = strtolower($class_name);
-					$method_name     = 'get_dao';
-					$this->$property = $this->$method_name($class_name);
-				} elseif (strstr($_class, 'Entity')) {
-					$class_name      = str_replace('Entity', '', $_class);
-					$class_name      = strtolower($class_name);
-					$method_name     = 'get_entity';
-					$this->$property = $this->$method_name($class_name);
-				}
-			}
-		}
-		else {
-			$method_parameters = [];
-		}
-		/** @var Response $response */
-		eval('$response = $this->'.$method.'('.implode(', ', $method_parameters).');');
-		return $response->display();
+		return DependenciesInjection::start(DependenciesInjection::CONTROLLER, $this, $method)->display();
 	}
 
 	/**

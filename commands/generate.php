@@ -163,7 +163,7 @@ class generate extends cmd {
 					$entity .= "\t\t * @text\n";
 				}
 				if($prop_details['entity'] !== false) {
-					$entity .= "\t\t * @entity ".ucfirst($prop_details['entity'])."Entity\n";
+					$entity .= "\t\t * @entity ".$prop_details['entity']."\n";
 				}
 				if($prop_details['size']) {
 					$entity .= "\t\t * @size(".$prop_details['size'].")\n";
@@ -202,6 +202,42 @@ class generate extends cmd {
 			exec('"c:\Program Files\Git\bin\git.exe" add '.__DIR__.'/../dao/'.ucfirst($name).'Dao.php');
 			$return .= "\nL'entité et le répository $name ont bien été ajoutés à GIT !!";
 		}
+		return $return;
+	}
+
+	/**
+	 * @return string
+	 * @throws Exception
+	 */
+	protected function service() {
+		$return = '';
+		if(!$this->has_arg('name')) {
+			throw new Exception('Vous devez définir un paramètre `name` !!');
+		}
+		$name = $this->get_arg('name');
+		$name = ucfirst($name);
+		$interface = '<?php
+	interface I'.$name.'Service extends IService {}';
+		$service = '<?php
+
+	class '.$name.'Service extends Service implements I'.$name.'Service {
+		public function initialize_after_injection() {}
+	}';
+
+		file_put_contents(__DIR__.'/../services/interfaces/I'.$name.'Service.php', $interface);
+		file_put_contents(__DIR__.'/../services/'.$name.'Service.php', $service);
+		$return .= 'Le service '.$name.' et son interface ont bien été créés !!';
+		if($this->os_service->IAmOnUnixSystem()) {
+			exec('git add '.__DIR__.'/../services/interfaces/I'.$name.'Service.php');
+			exec('git add '.__DIR__.'/../services/'.$name.'Service.php');
+			$return .= "\nLe service $name et son interface ont bien été ajoutés à GIT !!";
+		}
+		else {
+			exec('"c:\Program Files\Git\bin\git.exe" add '.__DIR__.'/../services/interfaces/I'.$name.'Service.php');
+			exec('"c:\Program Files\Git\bin\git.exe" add '.__DIR__.'/../services/'.$name.'Service.php');
+			$return .= "\nLe service $name et son interface ont bien été ajoutés à GIT !!";
+		}
+
 		return $return;
 	}
 

@@ -121,6 +121,9 @@ class Repository extends Base implements IRepository {
 	 * @throws Exception
 	 */
 	public function getBy($field, $value) {
+		if($value instanceof Entity) {
+			$value = $value->get($field);
+		}
 		$query = $this->get_mysql()
 					  ->query('SELECT * FROM '.$this->get_table_name().' WHERE `'.$field.'`='
 							  .(gettype($value) === 'string' ? '"'.$value.'"' : $value));
@@ -143,11 +146,12 @@ class Repository extends Base implements IRepository {
 
 	/**
 	 * @param $id
-	 * @return array
+	 * @return Entity|bool
 	 * @throws Exception
 	 */
 	public function getById($id) {
-		return $this->getBy('id', $id);
+		$result = $this->getBy('id', $id);
+		return $result ? $result[0] : $result;
 	}
 
 	/**

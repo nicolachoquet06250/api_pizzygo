@@ -1,6 +1,13 @@
 <?php
 
 class LoginController extends Controller {
+
+	/** @var SessionService $session_service */
+	public $session_service;
+
+	/** @var LoginModel $model */
+	public $model;
+
 	/**
 	 * @inheritdoc
 	 * @title LOGIN USER
@@ -10,8 +17,8 @@ class LoginController extends Controller {
 	 * @http_verb get
 	 * @throws Exception
 	 */
-	protected function index(SessionService $session_service = null, LoginModel $model = null) {
-		return $this->login($session_service, $model);
+	public function index(): JsonResponse {
+		return $this->login();
 	}
 
 	/**
@@ -21,12 +28,12 @@ class LoginController extends Controller {
 	 * @return Response|ErrorController
 	 * @throws Exception
 	 */
-	protected function login(SessionService $session_service, LoginModel $model) {
-		if(!$session_service->has_key('user')) {
+	public function login(): JsonResponse {
+		if(!$this->session_service->has_key('user')) {
 			if($this->get('email') && $this->get('password')) {
-				$user  = $model->login($this->get('email'), $this->get('password'));
+				$user  = $this->model->login($this->get('email'), $this->get('password'));
 				if ($user) {
-					if (is_object($user) && $model->register_session($user)) {
+					if (is_object($user) && $this->model->register_session($user)) {
 						return $this->get_response(
 							[
 								'status' => true,
@@ -50,10 +57,10 @@ class LoginController extends Controller {
 	 * @return Response
 	 * @throws Exception
 	 */
-	protected function logged(LoginModel $model) {
+	public function logged(): JsonResponse {
 		return $this->get_response(
 			[
-				'logged' => $model->isLogged()
+				'logged' => $this->model->isLogged()
 			]
 		);
 	}
@@ -64,10 +71,10 @@ class LoginController extends Controller {
 	 * @return Response
 	 * @throws Exception
 	 */
-	protected function disconnect(LoginModel $model) {
+	public function disconnect(): JsonResponse {
 		return $this->get_response(
 			[
-				'disconnected' => $model->delete_session()
+				'disconnected' => $this->model->delete_session()
 			]
 		);
 	}
@@ -79,12 +86,59 @@ class LoginController extends Controller {
 	 * @return Response
 	 * @throws Exception
 	 */
-	protected function logged_user(SessionService $session_service) {
-		return $this->get_response(($session_service->has_key('user') ? [
+	public function logged_user(): JsonResponse {
+		return $this->get_response(($this->session_service->has_key('user') ? [
 			'status' => true,
-			'user' => $session_service->get('user')
+			'user' => $this->session_service->get('user')
 		] : [
 			'status' => false
 		]));
+	}
+
+	/**
+	 * @param string $email
+	 * @http_verb post
+	 * @return ErrorController|JsonResponse|Response
+	 * @throws Exception
+	 */
+	public function forgot_password(UserDao $userDao, EmailService $emailService, TokenService $tokenService, Micro_templatingService $templatingService) {
+		if($this->post('email')) {
+			/** @var UserEntity[] $user */
+			$user = $userDao->getBy('email', $this->post('email'));
+			if($user) {
+				$user = $user[0];
+			}
+			$token = $tokenService->generate_token_for_user($user);
+			$user->set('activate_token', $token);
+			$user->save();
+			$templatingService->set_path(__DIR__.'/../views/emails');
+			$emailService->html()->charset('utf-8')
+								 ->set_from_name('Pizzygo')
+								->to($this->post('email'), 'Pizzygo')
+								->object('Changement de mot de passe pizzygo')
+								->message($templatingService->display('forgot_password', [
+									'surname' => $user->get('surname'),
+									'token' => $token
+								]))
+								->send();
+			return $this->get_response(
+				[
+					'status' => true,
+					'message' => 'Un email vous à été envoyé',
+				]
+			);
+		}
+		elseif ($this->get('token')) {
+			/** @var UserEntity $user */
+			$user = $userDao->getBy('activate_token', $this->get('token'));
+			if($user) {
+				$user = $user[0];
+			}
+			else {
+				return $this->get_error_controller(404)->message('No users found');
+			}
+			return $this->get_response($user);
+		}
+		return $this->get_error_controller(503)->message('parameter is required');
 	}
 }

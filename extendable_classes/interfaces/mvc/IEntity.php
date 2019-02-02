@@ -20,4 +20,6 @@ interface IEntity extends IBase {
 	public function get($prop);
 
 	public function set($prop, $value, $update = false);
+
+	public function get_table_name($for_insert = true);
 }

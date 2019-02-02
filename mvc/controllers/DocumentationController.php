@@ -2,8 +2,13 @@
 
 	/**
 	 * Class DocumentationController
+	 * @not_request
 	 */
 	class DocumentationController extends Controller {
+
+		/** @var DocumentationModel $model */
+		public $model;
+
 		/**
 		 * @title DOCUMENTATION
 		 * @describe Injection de dépendences disponible :
@@ -12,9 +17,8 @@
 		 * @return Response
 		 * @throws Exception
 		 */
-		protected function index(SessionService $session_service = null, HttpService $http_service = null,
-								 DocumentationModel $model = null, UserDao $user_dao = null) {
-			return $this->developer($model, $http_service, $user_dao, $session_service);
+		public function index(SessionService $session_service = null, HttpService $http_service = null, UserDao $user_dao = null): HtmlResponse {
+			return $this->developer($http_service, $user_dao, $session_service);
 		}
 
 		/**
@@ -22,7 +26,7 @@
 		 * @throws ReflectionException
 		 * @throws Exception
 		 */
-		protected function developer(DocumentationModel $model, HttpService $http_service, UserDao $user_dao, SessionService $session_service) {
+		public function developer(HttpService $http_service, UserDao $user_dao, SessionService $session_service): HtmlResponse {
 			if($http_service->post('email') && $http_service->post('password')) {
 				/** @var UserEntity|bool $user */
 				$user = $user_dao->getByEmailAndPassword(
@@ -30,14 +34,14 @@
 					sha1(sha1($this->http_service->post('password')))
 				);
 				if($user && $user->toArrayForJson()['roles'][0]['role'] === RoleEntity::ADMIN) {
-					$model->create_session($user);
+					$this->model->create_session($user);
 				}
 				else {
-					$object = $model->get_connexion_content('Votre compte n\'à pas les droits administrateurs !!');
+					$object = $this->model->get_connexion_content('Votre compte n\'à pas les droits administrateurs !!');
 					return $this->get_response($object, Response::HTML);
 				}
 			}
-			$object = $session_service->has_key('doc_admin') ? $model->get_doc_content() : $model->get_connexion_content();
+			$object = $session_service->has_key('doc_admin') ? $this->model->get_doc_content() : $this->model->get_connexion_content();
 
 			return $this->get_response($object, Response::HTML);
 		}
@@ -46,16 +50,15 @@
 		 * @return Response
 		 * @throws Exception
 		 */
-		protected function user(DocumentationModel $model) {
-			return $this->get_response($model->get_user_doc_content(), Response::HTML);
+		public function user(): HtmlResponse {
+			return $this->get_response($this->model->get_user_doc_content(), Response::HTML);
 		}
 
 		/**
 		 * @throws Exception
-		 * @not_in_doc
 		 */
-		protected function disconnect(DocumentationModel $model) {
-			if($model->delete_session()) {
+		public function disconnect(): HtmlResponse {
+			if($this->model->delete_session()) {
 				header('location: /api/index.php/documentation');
 			}
 			return $this->get_response('', Response::HTML);

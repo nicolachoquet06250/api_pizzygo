@@ -20,7 +20,7 @@ class Base implements IBase {
 	 * @return Model
 	 * @throws Exception
 	 */
-	protected function get_model(string $model) {
+	public function get_model(string $model) {
 		$model = ucfirst($model).'Model';
 		if(file_exists(__DIR__.'/../mvc/models/'.$model.'.php')) {
 			require_once __DIR__.'/../mvc/models/'.$model.'.php';
@@ -36,7 +36,7 @@ class Base implements IBase {
 	 * @return Service
 	 * @throws Exception
 	 */
-	protected function get_service(string $service) {
+	public function get_service(string $service) {
 		$service = ucfirst($service).'Service';
 		if(file_exists(__DIR__.'/../services/'.$service.'.php')) {
 			require_once __DIR__.'/../services/interfaces/I'.$service.'.php';
@@ -56,7 +56,7 @@ class Base implements IBase {
 	 * @return Repository
 	 * @throws Exception
 	 */
-	protected function get_dao(string $dao) {
+	public function get_dao(string $dao) {
 		return $this->get_repository($dao);
 	}
 
@@ -65,7 +65,7 @@ class Base implements IBase {
 	 * @return Repository
 	 * @throws Exception
 	 */
-	protected function get_repository(string $repository) {
+	public function get_repository(string $repository) {
 		$repository = ucfirst($repository).'Repository';
 		if(file_exists(__DIR__.'/../dao/'.$repository.'.php')) {
 			require_once __DIR__.'/../dao/'.$repository.'.php';
@@ -87,7 +87,7 @@ class Base implements IBase {
 	 * @return Entity
 	 * @throws Exception
 	 */
-	protected function get_entity(string $entity) {
+	public function get_entity(string $entity) {
 		$entity = ucfirst($entity).'Entity';
 		if(file_exists(__DIR__.'/../entities/'.$entity.'.php')) {
 			require_once __DIR__.'/../entities/'.$entity.'.php';
@@ -118,7 +118,7 @@ class Base implements IBase {
 	 * @return Conf
 	 * @throws Exception
 	 */
-	protected function get_conf(string $conf) {
+	public function get_conf(string $conf) {
 		$conf = ucfirst($conf).'Conf';
 		if(file_exists(__DIR__.'/../conf/'.$conf.'.php')) {
 			if(!isset(self::$confs[$conf])) {

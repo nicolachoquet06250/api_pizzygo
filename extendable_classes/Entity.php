@@ -11,7 +11,6 @@ class Entity extends Base implements IEntity {
 	/**
 	 * Entity constructor.
 	 *
-	 * @param null|mysqli $mysql
 	 * @throws ReflectionException
 	 * @throws Exception
 	 */
@@ -114,7 +113,7 @@ class Entity extends Base implements IEntity {
 			},
 			'@entity ' => function(ReflectionProperty $prop, string $doc_line) {
 				$this->fields[$prop->getName()]['entity'] = [
-					'table' => strtolower(str_replace('Entity', '', explode(' ', $doc_line)[1])),
+					'table' => explode(' ', $doc_line)[1],
 					'searchBy' => explode('_', $prop->getName())[count(explode('_', $prop->getName()))-1],
 				];
 			},
@@ -250,7 +249,7 @@ class Entity extends Base implements IEntity {
 	 * @param bool $for_insert
 	 * @return string
 	 */
-	protected function get_table_name($for_insert = true) {
+	public function get_table_name($for_insert = true) {
 		$prefix = '';
 		if($this->mysql_conf->has_property('table-prefix')) {
 			$prefix = $this->mysql_conf->get('table-prefix');
@@ -267,7 +266,7 @@ class Entity extends Base implements IEntity {
 	}
 
 	public function delete() {
-		$this->get_mysql()->query('DELETE FROM '.$this->get_table_name().' WHERE `id`='.$this->get('id'));
+		return $this->get_mysql()->query('DELETE FROM '.$this->get_table_name().' WHERE `id`='.$this->get('id'));
 	}
 
 	/**

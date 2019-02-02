@@ -1,5 +1,7 @@
 <?php
 
+require_once __DIR__.'/autoload_for_dependencies_injection.php';
+
 class cmd extends Base implements ICmd {
 	private $args;
 	private $mysql;
@@ -14,7 +16,7 @@ class cmd extends Base implements ICmd {
 		$this->args = $args;
 		$this->clean_args();
 		/** @var MysqlService $mysql_service */
-		$mysql_service = $this->get_service('mysqlConf');
+		$mysql_service = $this->get_service('mysql');
 		$this->mysql = $mysql_service->get_connector();
 	}
 
@@ -36,8 +38,8 @@ class cmd extends Base implements ICmd {
 	 * @throws Exception
 	 */
 	public function run($method) {
-		if(in_array($method, get_class_methods(get_class($this)))) {
-			return $this->$method();
+		if (in_array($method, get_class_methods(get_class($this)))) {
+			return DependenciesInjection::start(DependenciesInjection::COMMAND, $this, $method);
 		}
 		throw new Exception('La commande '.get_class($this).'::'.$method.'() n\'existe pas !!');
 	}

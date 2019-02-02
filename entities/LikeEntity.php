@@ -10,13 +10,13 @@
 		/**
 		 * @var int $shop_id
 		 * @not_null
-		 * @entity ShopEntity
+		 * @entity shop
 		 */
 		protected $shop_id = 0;
 		/**
 		 * @var int $user_id
 		 * @not_null
-		 * @entity UserEntity
+		 * @entity user
 		 */
 		protected $user_id = 0;
 

@@ -7,7 +7,7 @@ class EmailService extends Service implements IEmailService {
 
 	private $smtp_host = 'smtp.gmail.com';
 	private $smtp_post = 587;
-	private $debug = 1;
+	private $debug = 0;
 	private $auth = true;
 	private $secure = 'tls';
 
@@ -20,26 +20,30 @@ class EmailService extends Service implements IEmailService {
 		/** @var CredentialsEntity[]|bool $email_credential */
 		$email_credential = $credentials_dao->getBy('type', 'mailing');
 		$email_credential = $email_credential ? $email_credential[0] : null;
-		if(!is_null($email_credential)) {
-			$this->credentials = [
-				'email'    => $email_credential->get('login'),
-				'password' => $email_credential->get('password'),
-			];
-			$this->mailer = new PHPMailer\PHPMailer\PHPMailer(false);
-			$this->mailer->IsSMTP();
-			$this->mailer->SMTPDebug  = $this->debug;  // debogage: 1 = Erreurs et messages, 2 = messages seulement
-			$this->mailer->SMTPAuth   = $this->auth;  // Authentification SMTP active
-			$this->mailer->SMTPSecure = $this->secure; // Gmail REQUIERT Le transfert securise
-
-			$this->mailer->Host = $this->smtp_host;
-			$this->mailer->Port = $this->smtp_post;
-
-			$this->mailer->Username = $this->credentials['email'];
-			$this->mailer->Password = $this->credentials['password'];
-		}
-		else {
+		if(is_null($email_credential)) {
 			throw new Exception('Vous devez enregistrer des credentials pour pouvoir vous connected');
 		}
+		$this->credentials = [
+			'email'    => $email_credential->get('login'),
+			'password' => $email_credential->get('password'),
+		];
+		$this->mailer = new PHPMailer\PHPMailer\PHPMailer(true);
+		$this->mailer->IsSMTP();
+		$this->mailer->SMTPDebug  = $this->debug;  // debogage: 1 = Erreurs et messages, 2 = messages seulement
+		$this->mailer->SMTPAuth   = $this->auth;  // Authentification SMTP active
+		$this->mailer->SMTPSecure = $this->secure; // Gmail REQUIERT Le transfert securise
+
+		$this->mailer->Host = $this->smtp_host;
+		$this->mailer->Port = $this->smtp_post;
+
+		$this->mailer->Username = $this->credentials['email'];
+		$this->mailer->Password = $this->credentials['password'];
+
+	}
+
+	public function html() {
+		$this->mailer->isHTML();
+		return $this;
 	}
 
 	/**

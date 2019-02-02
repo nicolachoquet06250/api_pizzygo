@@ -68,6 +68,7 @@ class UserEntity extends Entity {
 	protected $active = false;
 	/**
 	 * @var string $activate_token
+	 * @JsonExclude
 	 * @not_null
 	 * @size(255)
 	 */

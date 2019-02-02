@@ -10,6 +10,10 @@ if(is_file(__DIR__.'/vendor/autoload.php')) {
 	require_once __DIR__.'/vendor/autoload.php';
 }
 
+if(is_file(__DIR__.'/queues/autoload.php')) {
+	require_once __DIR__.'/queues/autoload.php';
+}
+
 if(is_dir(__DIR__.'/mvc/interfaces')) {
 	$dir = opendir(__DIR__.'/mvc/interfaces');
 	while (($elem = readdir($dir)) !== false) {

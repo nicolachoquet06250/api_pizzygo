@@ -19,6 +19,10 @@ class Conf extends Base implements IConf {
 		$this->conf[$key] = $value;
 	}
 
+	public function get_all() {
+		return $this->conf;
+	}
+
 	/**
 	 * @param $key
 	 * @param bool $throw_except

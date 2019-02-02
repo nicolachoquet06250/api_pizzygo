@@ -17,7 +17,7 @@ class VariantEntity extends Entity {
 	 * @var int $category_id
 	 * @not_null
 	 * @size(11)
-	 * @entity Product_categoryEntity
+	 * @entity product_category
 	 */
 	protected $category_id = 0;
 	/**

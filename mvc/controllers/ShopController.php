@@ -1,6 +1,11 @@
 <?php
 		
 	class ShopController extends Controller {
+		/** @var SessionService $session_service */
+		public $session_service;
+
+		/** @var ShopDao $shop_dao */
+		public $shop_dao;
 
 		/**
 		 * @param int $id
@@ -8,7 +13,7 @@
 		 * @throws Exception
 		 * @alias getAll
 		 */
-		protected function index() {
+		public function index() {
 			if(!$this->get('id')) {
 				return $this->getAll();
 			}
@@ -20,16 +25,12 @@
 		 * @return ErrorController|Response
 		 * @throws Exception
 		 */
-		protected function getAll() {
-			/** @var ShopDao $shop_dao */
-			$shop_dao = $this->get_dao('shop');
-			/** @var SessionService $session_service */
-			$session_service = $this->get_service('session');
-			if(!$session_service->has_key('user')) {
+		public function getAll() {
+			if(!$this->session_service->has_key('user')) {
 				return $this->get_error_controller(403)->message('You are not logged');
 			}
 			/** @var ShopEntity[]|bool $shops */
-			$shops = $shop_dao->getBy('user_id', $session_service->get('user')['id']);
+			$shops = $this->shop_dao->getBy('user_id', $this->session_service->get('user')['id']);
 			if(!$shops) {
 				return $this->get_error_controller(404)->message('You have not shops');
 			}
@@ -41,16 +42,12 @@
 		 * @return ErrorController|Response
 		 * @throws Exception
 		 */
-		protected function getById() {
-			/** @var ShopDao $shop_dao */
-			$shop_dao = $this->get_dao('shop');
-			/** @var SessionService $session_service */
-			$session_service = $this->get_service('session');
-			if(!$session_service->has_key('user')) {
+		public function getById() {
+			if(!$this->session_service->has_key('user')) {
 				return $this->get_error_controller(403)->message('You are not logged');
 			}
 			/** @var ShopEntity[]|bool $shops */
-			$shop = $shop_dao->getById($this->get('id'));
+			$shop = $this->shop_dao->getById($this->get('id'));
 			if(!$shop) {
 				return $this->get_error_controller(404)->message('Shop with id '.$this->get('id').' not found');
 			}
@@ -68,23 +65,19 @@
 		 * @return ErrorController|Response
 		 * @throws Exception
 		 */
-		protected function addShop() {
+		public function addShop(ShopEntity $shop_entity) {
 			if(!$this->post('user_id') || !$this->post('name') || !$this->post('description')) {
 				return $this->get_error_controller(403)->message('parameters user_id, name and description are required');
 			}
-			/** @var ShopDao $shop_dao */
-			$shop_dao = $this->get_dao('shop');
-			$shop = $shop_dao->create(function (Base $object) {
-				/** @var ShopEntity $shop */
-				$shop = $object->get_entity('shop');
-				$shop->initFromArray(
+			$shop = $this->shop_dao->create(function () use (&$shop_entity) {
+				$shop_entity->initFromArray(
 					[
 						'user_id' => (int)$this->post('user_id'),
 						'name' => $this->post('name'),
 						'description' => $this->post('description'),
 					]
 				);
-				return $shop;
+				return $shop_entity;
 			});
 			return $this->get_response($shop);
 		}

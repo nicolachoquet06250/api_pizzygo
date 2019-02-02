@@ -16,35 +16,35 @@ class OrderEntity extends Entity {
 	/**
 	 * @var int $user_id
 	 * @not_null
-	 * @entity UserEntity
+	 * @entity user
 	 * @size(11)
 	 */
 	protected $user_id = 0;
 	/**
 	 * @var int $address
 	 * @not_null
-	 * @entity AddressEntity
+	 * @entity address
 	 * @size(11)
 	 */
 	protected $address_id = 0;
 	/**
 	 * @var int $status
 	 * @not_null
-	 * @entity Order_statusEntity
+	 * @entity order_status
 	 * @size(11)
 	 */
 	protected $status_id = 0;
 	/**
 	 * @var int $end_status_id
 	 * @not_null
-	 * @entity End_statusEntity
+	 * @entity end_status
 	 * @size(11)
 	 */
 	protected $end_status_id = 0;
 	/**
 	 * @var int $shop_id
 	 * @not_null
-	 * @entity ShopEntity
+	 * @entity shop
 	 * @size(11)
 	 */
 	protected $shop_id = 0;

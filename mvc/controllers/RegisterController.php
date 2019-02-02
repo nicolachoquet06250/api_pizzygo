@@ -1,6 +1,8 @@
 <?php
 
 class RegisterController extends Controller {
+	/** @var RegisterModel $model */
+	public $model;
 
 	/**
 	 * @inheritdoc
@@ -19,8 +21,8 @@ class RegisterController extends Controller {
 	 * @not_in_doc
 	 * @throws Exception
 	 */
-	protected function index(RegisterModel $model = null, HttpService $httpService = null) {
-		return $this->register($model, $httpService);
+	public function index(): JsonResponse {
+		return $this->register();
 	}
 
 	/**
@@ -40,7 +42,7 @@ class RegisterController extends Controller {
 	 * @return Response
 	 * @throws Exception
 	 */
-	protected function register(RegisterModel $model, HttpService $httpService) {
+	public function register(): JsonResponse {
 		$infos = [];
 		foreach ($_POST as $key => $value) {
 			if($key === 'describe') {
@@ -50,7 +52,7 @@ class RegisterController extends Controller {
 				$infos[$key] = $value;
 			}
 		}
-		$user = $model->register_user($infos);
+		$user = $this->model->register_user($infos);
 		return $this->get_response($user);
 	}
 }

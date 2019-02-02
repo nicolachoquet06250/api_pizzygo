@@ -435,4 +435,22 @@ class install extends cmd {
 			$this->get_dao($entity)->update_structure();
 		}
 	}
+
+	/**
+	 * @throws Exception
+	 */
+	protected function dependencies() {
+		/** @var DependenciesConf $dependencies */
+		$dependencies = $this->get_conf('dependencies');
+		/** @var OsService $os_service */
+		$os_service = $this->get_service('os');
+		foreach ($dependencies->get_all() as $dir => $dependency) {
+			if($os_service->IAmOnUnixSystem()) {
+				exec('git clone '.$dependency.' '.__DIR__.'/../'.$dir);
+			}
+			else {
+				exec('"c:\Program Files\Git\bin\git.exe" clone '.$dependency.' '.__DIR__.'/../'.$dir);
+			}
+		}
+	}
 }

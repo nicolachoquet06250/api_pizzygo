@@ -35,7 +35,12 @@ class Response extends Base implements IResponse {
 		header('Content-Type: '.$this->header_type.';charset=UTF-8');
 	}
 
+	/**
+	 * @throws Exception
+	 */
 	protected function parse_element() {
+		/** @var JsonService $json_service */
+		$json_service = $this->get_service('json');
 		$element = null;
 		if(is_array($this->element)) {
 			$element = [];
@@ -64,9 +69,13 @@ class Response extends Base implements IResponse {
 			$_element = $this->element;
 			$element = $_element->toArrayForJson();
 		}
-		$this->parsed_element = json_encode($element);
+		$this->parsed_element = $json_service->encode($element);
 	}
 
+	/**
+	 * @return mixed
+	 * @throws Exception
+	 */
 	public function display() {
 		$this->parse_element();
 		return $this->parsed_element;

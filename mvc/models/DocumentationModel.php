@@ -51,10 +51,11 @@ HTML;
 		 * @param null $alias
 		 * @param string $title
 		 * @param string $describe
+		 * @param bool $request_active
 		 * @return mixed
 		 * @throws Exception
 		 */
-		private function get_section_template($http_verb, $url, $params = [], $alias = null, $title = '', $describe = '') {
+		private function get_section_template($http_verb, $url, $params = [], $alias = null, $title = '', $describe = '', $request_active = true) {
 			$input_fields = '';
 			foreach ($params as $param => $type) {
 				if($type === 'string') {
@@ -63,17 +64,44 @@ HTML;
 				elseif ($type === 'int') {
 					$type = 'number';
 				}
+				elseif ($type === 'bool' || $type === 'boolean') {
+					$type = 'checkbox';
+				}
 				else {
 					$type = 'text';
 				}
-				$input_fields .= '<div class="col s12 m6 l4">
+				if($type === 'checkbox') {
+					$input_fields .= '<div class="col s12 m6 l4">
+	<div class="input-field">
+		<p>
+			<label>
+				<input 	type="'.$type.'" value=1 
+						class="'.str_replace('/', '_', $url).(!is_null($alias) ? '_'.$alias : '').'" 
+						id="'.str_replace('/', '_', $url).(!is_null($alias) ? '_'.$alias : '').'-'.$param.'-'.$type.'"
+						 placeholder="'.$param.'"/>
+				<span>'.$param.'</span>
+        	</label>
+    	</p>
+	</div>
+</div>';
+				}
+				else {
+					$input_fields .= '<div class="col s12 m6 l4">
 	<div class="input-field">
 		<label for="'.str_replace('/', '_', $url).(!is_null($alias) ? '_'.$alias : '').'-'.$param.'-'.$type.'">'.$param.'</label>
 		<input type="'.$type.'" class="'.str_replace('/', '_', $url).(!is_null($alias) ? '_'.$alias : '').'" id="'.str_replace('/', '_', $url).(!is_null($alias) ? '_'.$alias : '').'-'.$param.'-'.$type.'" placeholder="'.$param.'" />
 	</div>
 </div>';
+				}
 			}
-			$input_fields .= '<input type="button" class="btn orange" data-url="/api/index.php'.$url.(!is_null($alias) ? '/'.$alias : '').'" value="Envoyer" data-http_verb="'.$http_verb.'" data-class="'.str_replace('/', '_', $url).(!is_null($alias) ? '_'.$alias : '').'" />';
+			if($request_active) {
+				$input_fields .= '<div class="col s12">
+	<input 	type="button" class="btn orange" 
+			data-url="/api/index.php'.$url.(!is_null($alias) ? '/'.$alias : '').'" 
+			value="Envoyer" data-http_verb="'.$http_verb.'" 
+			data-class="'.str_replace('/', '_', $url).(!is_null($alias) ? '_'.$alias : '').'" />
+</div>';
+			}
 
 			/** @var OsService $service_os */
 			$service_os = $this->get_service('os');
@@ -125,10 +153,17 @@ HTML;
 					$class_doc = str_replace($retour."\t\t */", '', $class_doc);
 					$class_doc = explode($retour, $class_doc);
 					$class_in_doc = true;
+					$request = true;
 					foreach ($class_doc as $line) {
 						preg_match('`@not_in_doc`', $line, $matches);
 						if(!empty($matches)) {
 							$class_in_doc = false;
+							continue;
+						}
+
+						preg_match('`@not_request`', $line, $matches);
+						if(!empty($matches)) {
+							$request = false;
 							continue;
 						}
 					}
@@ -138,7 +173,7 @@ HTML;
 
 					$methods = $ref->getMethods();
 					foreach ($methods as $method) {
-						if ($method->getName() !== $class && $method->isProtected() && $method->class !== Controller::class && $method->class !== Base::class) {
+						if ($method->getName() !== $class && $method->isPublic() && $method->class !== Controller::class && $method->class !== Base::class) {
 							$params = [];
 							$alias = null;
 							$http_verb = 'GET';
@@ -177,6 +212,12 @@ HTML;
 									continue;
 								}
 
+								preg_match('`@not_request`', $line, $matches);
+								if(!empty($matches)) {
+									$method_request = false;
+									continue;
+								}
+
 								preg_match('`@describe ([^\@]+)`', $line, $matches);
 								if(!empty($matches)) {
 									$describe = $matches[1];
@@ -195,13 +236,14 @@ HTML;
 								'in_doc' => !$not_in_doc,
 								'title' => $title,
 								'describe' => $describe,
+								'request' => (isset($method_request) ? $method_request : $request),
 							];
 
 							if ($method->getName() === 'index') {
-								$routes['/'.$class] = $infos;
+								$routes[strtolower(str_replace('Controller', '', $controller))]['/'.$class] = $infos;
 							}
 							else {
-								$routes['/'.$class.'/'.$method->getName()] = $infos;
+								$routes[strtolower(str_replace('Controller', '', $controller))]['/'.$class.'/'.$method->getName()] = $infos;
 							}
 						}
 					}
@@ -211,6 +253,17 @@ HTML;
 			$this->routes = $routes;
 		}
 
+		private function get_nb_routes_to_show($controller) {
+			$routes = $this->routes[$controller];
+			$count = 0;
+			foreach ($routes as $route) {
+				if($route['in_doc']) {
+					$count++;
+				}
+			}
+			return $count;
+		}
+
 		/**
 		 * @return string
 		 * @throws ReflectionException
@@ -218,13 +271,45 @@ HTML;
 		 */
 		public function get_doc_content() {
 			$sections = '';
+			$sidenav_controllers = '';
 			$this->generate_routes();
 
 			ksort($this->routes);
 
-			foreach ($this->routes as $route => $detail) {
-				if($detail['in_doc']) {
-					$sections .= $this->get_section_template($detail['http_verb'], $route, $detail['params'], $detail['alias'], $detail['title'], $detail['describe']);
+			foreach ($this->routes as $controller => $routes) {
+				if($controller !== 'errors') {
+					$sections .= '<div class="row page" id="'.$controller.'">
+	<div class="col s12 center-align">
+		<h4>'.ucfirst($controller).' routes</h4>
+	</div>
+	<div class="col s12">';
+					if($this->get_nb_routes_to_show($controller) === 0) {
+						$sections .= '<div class="row">
+	<div class="col s12">
+		<div class="card">
+			<div class="card-title center-align" style="padding-left: 15px; padding-top: 10px; padding-bottom: 10px;">
+				<h5>Il n\'y a aucune route à afficher dans le controlleur `'.$controller.'`</h5>
+			</div>
+		</div>
+	</div>
+</div>';
+					}
+					else {
+						foreach ($routes as $route => $detail) {
+							if ($detail['in_doc']) {
+								$sections .= $this->get_section_template($detail['http_verb'], $route, $detail['params'], $detail['alias'], $detail['title'], $detail['describe'], $detail['request']);
+							}
+						}
+					}
+					$sections .= '</div></div>';
+				}
+			}
+
+			foreach ($this->get_controllers() as $controller) {
+				if($controller !== 'errors') {
+					$sidenav_controllers .= '<li '.($controller === 'documentation' ? 'class="active"' : '').'>
+	<a href="#'.strtolower($controller).'" class="page-changer">'.ucfirst($controller).'</a>
+</li>';
 				}
 			}
 
@@ -253,6 +338,7 @@ HTML;
 				            let field = $(input).attr('placeholder');
 				            data[field] = $(input).val();
 				        });
+				        data.debug = true;
 				        $.ajax({
 				        	beforeSend: () => {
 								$('#write_json_response' + class_data)
@@ -279,9 +365,33 @@ HTML;
 				    let resize_urls = () => {
 				         $('.api_url').css('max-width', $(document).width() + 50 + 'px').css('overflow', 'auto');
 				    };
+				    let init_change_page = () => {
+				        $('.sections .page').each((key, elem) => {
+				            let id = $(elem).attr('id');
+				            $(elem).css('display', 'none');
+				            let onglet = $('#controllers a[href="#' + id + '"]').parent();
+				            if (onglet.hasClass('active')) {
+				                $(elem).css('display', 'block');
+				            }
+				        })
+				    };
+				    let change_page = (parent) => {
+				        $('#controllers li').each((key, elem) => {
+				            $(elem).removeClass('active');
+				        });
+				        parent.addClass('active');
+				        init_change_page();
+				    };
+				    
+				    init_change_page();
 				    
 				    $('input[type=button]').on('click', elem => {
 				        valid_form($(elem.target).data('http_verb'), $(elem.target).data('class'), $(elem.target).data('url'));
+				    });
+				    
+				    $('a.page-changer').on('click', elem => {
+				        elem.preventDefault();
+				        change_page($(elem.target).parent());
 				    });
 				    
 				    resize_urls();
@@ -293,19 +403,30 @@ HTML;
 		<body>
 			<nav>
 				<div class="nav-wrapper">
-					<a href="#" class="brand-logo">
+					<a href="#" data-target="controllers"  class="brand-logo sidenav-trigger show-on-medium-and-up show-on-medium-and-down" >
 						<img src="/public/img/logo_pizzygo.png" style="padding-left: 10px;height: 65px;" alt="logo" />
 					</a>
-            		<a href="#" data-target="mobile-demo" class="sidenav-trigger"><i class="material-icons">menu</i></a>
+            		<a href="#" data-target="menu-sidenav" class="sidenav-trigger">
+            			<i class="material-icons">menu</i>
+            		</a>
 					<ul id="nav-mobile" class="right hide-on-med-and-down">
 						<li class="active"><a href="/api/index.php/documentation/developer">Développeur</a></li>
                 		<li><a href="/api/index.php/documentation/user">Utilisateur</a></li>
                 		<li><a href="/api/index.php/documentation/disconnect">Déconnection</a></li>
 					</ul>
-					<ul class="sidenav" id="mobile-demo">
-						<li class="active"><a href="/api/index.php/documentation/developer">Développeur</a></li>
-						<li><a href="/api/index.php/documentation/user">Utilisateur</a></li>
-                		<li><a href="/api/index.php/documentation/disconnect">Déconnection</a></li>
+					<ul class="sidenav" id="menu-sidenav">
+						<li class="active">
+							<a href="/api/index.php/documentation/developer">Développeur</a>
+						</li>
+						<li>
+							<a href="/api/index.php/documentation/user">Utilisateur</a>
+						</li>
+                		<li>
+                			<a href="/api/index.php/documentation/disconnect">Déconnection</a>
+                		</li>
+					</ul>
+					<ul class="sidenav" id="controllers">
+						{$sidenav_controllers}
 					</ul>
 				</div>
 			</nav>
@@ -321,7 +442,7 @@ HTML;
 				</div>
 			</header>
 			<main>
-				<div class="container">
+				<div class="container sections">
 					{$sections}
 				</div>
 			</main>
