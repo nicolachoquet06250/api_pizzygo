@@ -402,7 +402,7 @@ HTML;
 		</head>
 		<body>
 			<nav>
-				<div class="nav-wrapper">
+				<div class="nav-wrapper orange">
 					<a href="#" data-target="controllers"  class="brand-logo sidenav-trigger show-on-medium-and-up show-on-medium-and-down" >
 						<img src="/public/img/logo_pizzygo.png" style="padding-left: 10px;height: 65px;" alt="logo" />
 					</a>
@@ -479,7 +479,7 @@ HTML;
 		</head>
 		<body>
 			<nav>
-				<div class="nav-wrapper">
+				<div class="nav-wrapper orange">
 					<a href="#" class="brand-logo">
 						<img src="/public/img/logo_pizzygo.png" style="padding-left: 10px;height: 65px;" alt="logo" />
 					</a>
@@ -508,13 +508,13 @@ HTML;
 							<div class="col s12 m6">
 								<div class="input-field">
 									<label for="email">Email</label>
-									<input name="email" type="email" id="email" />
+									<input name="email" type="email" id="email" placeholder="Email" />
 								</div>
 							</div>
 							<div class="col s12 m6">
 								<div class="input-field">
 									<label for="password">Password</label>
-									<input name="password" type="password" id="password" />
+									<input name="password" type="password" id="password" placeholder="Password" />
 								</div>
 							</div>
 							<div class="col s12 {$color_class}">{$error_message}</div>
