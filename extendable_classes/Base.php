@@ -3,6 +3,10 @@
 class Base implements IBase {
 	private static $confs = [];
 
+	protected function active_depencency_injection() {
+		require_once __DIR__.'/autoload_for_dependencies_injection.php';
+	}
+
 	protected function get_controllers() {
 		$directory = __DIR__.'/../mvc/controllers';
 		$dir = opendir($directory);

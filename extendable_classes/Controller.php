@@ -1,7 +1,5 @@
 <?php
 
-require_once __DIR__.'/autoload_for_dependencies_injection.php';
-
 abstract class Controller extends Base implements IController {
 	private $method;
 	protected $params;
@@ -18,6 +16,7 @@ abstract class Controller extends Base implements IController {
 	 * @throws Exception
 	 */
 	public function __construct($action, $params) {
+		$this->active_depencency_injection();
 		$current_class = get_class($this);
 		$class_methods = get_class_methods($current_class);
 		$this->http_service = $this->get_service('http');

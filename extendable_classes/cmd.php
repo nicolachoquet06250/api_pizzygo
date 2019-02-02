@@ -1,7 +1,5 @@
 <?php
 
-require_once __DIR__.'/autoload_for_dependencies_injection.php';
-
 class cmd extends Base implements ICmd {
 	private $args;
 	private $mysql;
@@ -13,6 +11,7 @@ class cmd extends Base implements ICmd {
 	 * @throws Exception
 	 */
 	public function __construct($args) {
+		$this->active_depencency_injection();
 		$this->args = $args;
 		$this->clean_args();
 		/** @var MysqlService $mysql_service */
