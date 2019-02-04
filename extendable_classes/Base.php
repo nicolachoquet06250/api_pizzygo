@@ -3,6 +3,8 @@
 class Base implements IBase {
 	private static $confs = [];
 
+	private static $queues_loader;
+
 	protected function active_depencency_injection() {
 		require_once __DIR__.'/autoload_for_dependencies_injection.php';
 	}
@@ -164,5 +166,19 @@ class Base implements IBase {
 
 	public function toArrayForJson($recursive = true) {
 		return [];
+	}
+
+	/**
+	 * @return \mvc_framework\core\queues\ModuleLoader
+	 * @throws Exception
+	 */
+	public function queues_loader() {
+		if(!class_exists(\mvc_framework\core\queues\ModuleLoader::class)) {
+			throw new Exception('plugin `queues` not found');
+		}
+		if(is_null(self::$queues_loader)) {
+			self::$queues_loader = new \mvc_framework\core\queues\ModuleLoader();
+		}
+		return self::$queues_loader;
 	}
 }

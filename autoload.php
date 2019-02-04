@@ -10,8 +10,8 @@ if(is_file(__DIR__.'/vendor/autoload.php')) {
 	require_once __DIR__.'/vendor/autoload.php';
 }
 
-if(is_file(__DIR__.'/queues/autoload.php')) {
-	require_once __DIR__.'/queues/autoload.php';
+if(is_file(__DIR__.'/queues_plugin/autoload.php')) {
+	require_once __DIR__.'/queues_plugin/autoload.php';
 }
 
 if(is_dir(__DIR__.'/mvc/interfaces')) {

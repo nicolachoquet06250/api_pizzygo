@@ -2,18 +2,13 @@
 
 class generate extends cmd {
 	/** @var OsService $os_service */
-	private $os_service;
-
-	public function __construct($args) {
-		parent::__construct($args);
-		$this->os_service = $this->get_service('os');
-	}
+	public $os_service;
 
 	/**
 	 * @return string
 	 * @throws Exception
 	 */
-	protected function mvc() {
+	public function mvc() {
 		$return = '';
 		if(!$this->has_arg('name')) {
 			throw new Exception('Vous devez définir un paramètre `name` !!');
@@ -54,7 +49,7 @@ class generate extends cmd {
 	/**
 	 * @throws Exception
 	 */
-	protected function command() {
+	public function command() {
 		$return = '';
 		if(!$this->has_arg('name')) {
 			throw new Exception('Vous devez définir un paramètre `name` !!');
@@ -81,7 +76,7 @@ class generate extends cmd {
 	/**
 	 * @throws Exception
 	 */
-	protected function repository() {
+	public function repository() {
 		$return = '';
 		if(!$this->has_arg('name')) {
 			throw new Exception('Vous devez définir un paramètre `name` !!');
@@ -209,7 +204,7 @@ class generate extends cmd {
 	 * @return string
 	 * @throws Exception
 	 */
-	protected function service() {
+	public function service() {
 		$return = '';
 		if(!$this->has_arg('name')) {
 			throw new Exception('Vous devez définir un paramètre `name` !!');
@@ -244,7 +239,7 @@ class generate extends cmd {
 	/**
 	 * @throws Exception
 	 */
-	protected function vendor_user() {
+	public function vendor_user(UserDao $user_dao, RoleDao $role_dao) {
 		$name = $this->get_arg('name');
 		$surname = $this->get_arg('surname');
 		$email = $this->get_arg('email');
@@ -256,8 +251,6 @@ class generate extends cmd {
 		$premium = false;
 		$active = true;
 		$activate_token = '';
-		/** @var UserDao $user_dao */
-		$user_dao = $this->get_dao('user');
 		$user = $user_dao->create(function (Base $object) use ($name, $surname, $email, $phone, $address,
 																		$password, $description, $profil_img, $premium,
 																		$active, $activate_token) {
@@ -281,9 +274,6 @@ class generate extends cmd {
 			return $user;
 		});
 
-
-		/** @var RoleDao $role_dao */
-		$role_dao = $this->get_dao('role');
 		$role_dao->create(function (Base $_object) use ($user) {
 			/** @var RoleEntity $role */
 			$role = $_object->get_entity('role');
@@ -303,7 +293,7 @@ class generate extends cmd {
 	 * @return array
 	 * @throws Exception
 	 */
-	protected function customer_user() {
+	public function customer_user(UserDao $user_dao, RoleDao $role_dao) {
 		$name = $this->get_arg('name');
 		$surname = $this->get_arg('surname');
 		$email = $this->get_arg('email');
@@ -315,8 +305,7 @@ class generate extends cmd {
 		$premium = false;
 		$active = true;
 		$activate_token = '';
-		/** @var UserDao $user_dao */
-		$user_dao = $this->get_dao('user');
+
 		$user = $user_dao->create(function (Base $object) use ($name, $surname, $email, $phone, $address,
 			$password, $description, $profil_img, $premium,
 			$active, $activate_token) {
@@ -340,8 +329,6 @@ class generate extends cmd {
 			return $user;
 		});
 
-		/** @var RoleDao $role_dao */
-		$role_dao = $this->get_dao('role');
 		$role_dao->create(function (Base $_object) use ($user) {
 			/** @var RoleEntity $role */
 			$role = $_object->get_entity('role');
@@ -361,7 +348,7 @@ class generate extends cmd {
 	 * @return array
 	 * @throws Exception
 	 */
-	protected function admin_user() {
+	public function admin_user(UserDao $user_dao, RoleDao $role_dao) {
 		$name = $this->get_arg('name');
 		$surname = $this->get_arg('surname');
 		$email = $this->get_arg('email');
@@ -373,8 +360,7 @@ class generate extends cmd {
 		$premium = false;
 		$active = true;
 		$activate_token = '';
-		/** @var UserDao $user_dao */
-		$user_dao = $this->get_dao('user');
+
 		$user = $user_dao->create(function (Base $object) use ($name, $surname, $email, $phone, $address,
 			$password, $description, $profil_img, $premium,
 			$active, $activate_token) {
@@ -398,8 +384,6 @@ class generate extends cmd {
 			return $user;
 		});
 
-		/** @var RoleDao $role_dao */
-		$role_dao = $this->get_dao('role');
 		$role_dao->create(function (Base $_object) use ($user) {
 			/** @var RoleEntity $role */
 			$role = $_object->get_entity('role');
@@ -418,9 +402,7 @@ class generate extends cmd {
 	 * @return string
 	 * @throws Exception
 	 */
-	public function update_password_user() {
-		/** @var UserDao $user_dao */
-		$user_dao = $this->get_dao('user');
+	public function update_password_user(UserDao $user_dao) {
 		$email = $this->get_arg('user').'.user@pizzygo.fr';
 		/** @var UserEntity $user */
 		if($user = $user_dao->getByEmail($email)) {

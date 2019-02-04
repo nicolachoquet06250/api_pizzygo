@@ -366,13 +366,11 @@ class install extends cmd {
 	/**
 	 * @throws Exception
 	 */
-	protected function test_db() {
+	public function test_db(InstallService $install_service) {
 		if(!is_null($this->get_arg('prefix'))) {
 			$prefix = $this->get_arg('prefix');
 			$this->get_conf('mysql')->set('table-prefix', $prefix, false);
 		}
-		/** @var InstallService $install_service */
-		$install_service = $this->get_service('install');
 		$install_service->test_databases();
 	}
 
@@ -380,9 +378,7 @@ class install extends cmd {
 	 * @throws Exception
 	 * @return string
 	 */
-	protected function db() {
-		/** @var InstallService $install_service */
-		$install_service = $this->get_service('install');
+	public function db(InstallService $install_service) {
 		if($install_service->databases()) {
 			return 'L\'installation de la base de donnée s\'est effectuée avec succes !!';
 		}
@@ -393,7 +389,7 @@ class install extends cmd {
 	 * @@translate dummy = factise
 	 * @throws Exception
 	 */
-	protected function dummy_data() {
+	public function dummy_data() {
 		$entities = $this->get_entities();
 		foreach ($entities as $entity) {
 			if(isset($this->dummy_data[$entity])) {
@@ -417,20 +413,18 @@ class install extends cmd {
 	/**
 	 * @throws Exception
 	 */
-	protected function drop_test_db() {
+	public function drop_test_db(InstallService $install_service) {
 		if(!is_null($this->get_arg('prefix'))) {
 			$prefix = $this->get_arg('prefix');
 			$this->get_conf('mysql')->set('table-prefix', $prefix, false);
 		}
-		/** @var InstallService $install_service */
-		$install_service = $this->get_service('install');
 		$install_service->drop_test_databases();
 	}
 
 	/**
 	 * @throws Exception
 	 */
-	protected function update_db_structure() {
+	public function update_db_structure() {
 		foreach ($this->get_entities() as $entity) {
 			$this->get_dao($entity)->update_structure();
 		}
@@ -439,11 +433,7 @@ class install extends cmd {
 	/**
 	 * @throws Exception
 	 */
-	protected function dependencies() {
-		/** @var DependenciesConf $dependencies */
-		$dependencies = $this->get_conf('dependencies');
-		/** @var OsService $os_service */
-		$os_service = $this->get_service('os');
+	public function dependencies(DependenciesConf $dependencies, OsService $os_service) {
 		foreach ($dependencies->get_all() as $dir => $dependency) {
 			if($os_service->IAmOnUnixSystem()) {
 				exec('git clone '.$dependency.' '.__DIR__.'/../'.$dir);

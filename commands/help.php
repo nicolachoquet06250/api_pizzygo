@@ -17,8 +17,8 @@ class help extends cmd {
 	/**
 	 * @throws ReflectionException
 	 */
-	protected function index() {
-		$retour = $this->get_service('os')->IamOnUnixSystem() ? "\n" : "\n\r";
+	public function index(OsService $os_service) {
+		$retour = $os_service->get_chariot_return();
 		$prefix = $sufix = '  #####  ';
 		$header = $prefix.'HELP FOR COMMANDS'.$sufix;
 		$this->write_before_and_after_header($header, $retour);
@@ -32,7 +32,7 @@ class help extends cmd {
 				$methods  = $ref->getMethods();
 				$_methods = [];
 				foreach ($methods as $method) {
-					if ($method->class !== Base::class && $method->class !== cmd::class && $method->isProtected()) {
+					if ($method->class !== Base::class && $method->class !== cmd::class && $method->isPublic() && $method->getName() !== '__construct') {
 						$_methods[] = $method->name;
 					}
 				}
@@ -153,10 +153,9 @@ class help extends cmd {
 	/**
 	 * @throws Exception
 	 */
-	protected function create_user_with_role() {
+	public function create_user_with_role(UserDao $user_dao, RoleEntity $role) {
 		Command::create(['install:db', 'prefix=test_']);
 
-		$user_dao = $this->get_repository('user');
 		// add user
 		$user = $user_dao->create(function(Base $object) {
 			$user = $object->get_entity('user');
@@ -178,7 +177,6 @@ class help extends cmd {
 		});
 
 		// add role linked to the last created user
-		$role = $this->get_entity('role');
 		$role->initFromArray(
 			[
 				'role' => 'role_user',
@@ -191,8 +189,7 @@ class help extends cmd {
 	/**
 	 * @throws Exception
 	 */
-	protected function to_array_for_json() {
-		$user = $this->get_entity('user');
+	public function to_array_for_json(UserEntity $user) {
 		$user->initFromArray(
 			[
 				'name' => 'Nicolas',
@@ -215,21 +212,19 @@ class help extends cmd {
 	 * @return array
 	 * @throws Exception
 	 */
-	protected function conf() {
+	public function conf(mysqlConf $mysql_conf) {
 		return [
-			$this->get_conf('mysql')->get('host'),
-			$this->get_conf('mysql')->get('user'),
-			$this->get_conf('mysql')->get('password'),
-			$this->get_conf('mysql')->get('database'),
+			$mysql_conf->get('host'),
+			$mysql_conf->get('user'),
+			$mysql_conf->get('password'),
+			$mysql_conf->get('database'),
 		];
 	}
 
 	/**
 	 * @throws Exception
 	 */
-	protected function get_roles_by_user_id() {
-		/** @var RoleDao $dao */
-		$dao = $this->get_dao('role');
+	public function get_roles_by_user_id(RoleDao $dao) {
 		/** @var RoleEntity $roles */
 		$roles = $dao->getBy('user_id', 2);
 		/** @var RoleEntity $role */
@@ -239,7 +234,7 @@ class help extends cmd {
 		return $roles;
 	}
 
-	protected function forks() {
+	public function forks() {
 		if (function_exists('pcntl_fork')) {
 			function execute_task($task_id) {
 				echo "Starting task: ${task_id}\n";
@@ -273,16 +268,14 @@ class help extends cmd {
 	/**
 	 * @throws Exception
 	 */
-	protected function threads() {
+	public function threads() {
 		($this->get_thread('main'))->start();
 	}
 
 	/**
 	 * @throws Exception
 	 */
-	protected function test_user_dao() {
-		/** @var UserDao $user_dao */
-		$user_dao = $this->get_dao('user');
+	public function test_user_dao(UserDao $user_dao) {
 		$user = $user_dao->getId_Name_Surname_Email_DescriptionByEmailAndPassword($this->get_arg('email'), sha1(sha1($this->get_arg('password'))));
 		if(is_array($user)) {
 			foreach ($user as $i => $_user)
@@ -295,8 +288,7 @@ class help extends cmd {
 	/**
 	 * @throws Exception
 	 */
-	protected function update_structure() {
-		$user_dao = $this->get_dao('user');
+	public function update_structure(UserDao $user_dao) {
 		$user_dao->update_structure();
 	}
 }
