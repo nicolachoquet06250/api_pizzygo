@@ -55,11 +55,25 @@
 		}
 
 		/**
+		 * @return Response|HtmlResponse
 		 * @throws Exception
 		 */
 		public function disconnect(): HtmlResponse {
 			if($this->model->delete_session()) {
 				header('location: /api/index.php/documentation');
+			}
+			return $this->get_response('', Response::HTML);
+		}
+
+		/**
+		 * @param string $page_id
+		 * @no_request
+		 * @return Response
+		 * @throws Exception
+		 */
+		public function change_page(SessionService $sessionService): Response {
+			if($this->get('page_id')) {
+				$sessionService->set('doc_page', $this->get('page_id'));
 			}
 			return $this->get_response('', Response::HTML);
 		}

@@ -15,6 +15,10 @@ class OsService extends Service implements IOsService {
 	}
 
 	public function get_chariot_return() {
+		return $this->IAmOnUnixSystem() ? "\n" : "\r";
+	}
+
+	public function get_chariot_return_2() {
 		return $this->IAmOnUnixSystem() ? "\n" : "\n\r";
 	}
 }

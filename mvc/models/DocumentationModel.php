@@ -108,6 +108,7 @@ HTML;
 			$describe = str_replace(' * ', '', $describe);
 			$describe = str_replace($service_os->get_chariot_return(), '<br>', $describe);
 			$describe = str_replace("\t", '', $describe);
+			$describe = str_replace("*/", '', $describe);
 
 			return str_replace(
 				[
@@ -149,8 +150,10 @@ HTML;
 					$ref     = new ReflectionClass($controller);
 					$class_doc = $ref->getDocComment();
 					$class_doc = str_replace('/**'.$retour, '', $class_doc);
-					$class_doc = str_replace($retour."\t */", '', $class_doc);
-					$class_doc = str_replace($retour."\t\t */", '', $class_doc);
+					$class_doc = str_replace("\t", '', $class_doc);
+					$class_doc = str_replace('*', '', $class_doc);
+					$class_doc = str_replace($retour." */", '', $class_doc);
+					$class_doc = str_replace("$retour*/", '', $class_doc);
 					$class_doc = explode($retour, $class_doc);
 					$class_in_doc = true;
 					$request = true;
@@ -239,11 +242,12 @@ HTML;
 								'request' => (isset($method_request) ? $method_request : $request),
 							];
 
+							$controller = strtolower(str_replace('Controller', '', $controller));
 							if ($method->getName() === 'index') {
-								$routes[strtolower(str_replace('Controller', '', $controller))]['/'.$class] = $infos;
+								$routes[$controller]['/'.$class] = $infos;
 							}
 							else {
-								$routes[strtolower(str_replace('Controller', '', $controller))]['/'.$class.'/'.$method->getName()] = $infos;
+								$routes[$controller]['/'.$class.'/'.$method->getName()] = $infos;
 							}
 						}
 					}
@@ -270,6 +274,10 @@ HTML;
 		 * @throws Exception
 		 */
 		public function get_doc_content() {
+			/** @var SessionService $session_service */
+			$session_service = $this->get_service('session');
+			/** @var Micro_templatingService $templating_service */
+			$templating_service = $this->get_service('micro_templating');
 			$sections = '';
 			$sidenav_controllers = '';
 			$this->generate_routes();
@@ -305,151 +313,19 @@ HTML;
 				}
 			}
 
+			$controller_selected = $session_service->has_key('doc_page') ? $session_service->get('doc_page') : 'documentation';
 			foreach ($this->get_controllers() as $controller) {
 				if($controller !== 'errors') {
-					$sidenav_controllers .= '<li '.($controller === 'documentation' ? 'class="active"' : '').'>
+					$sidenav_controllers .= '<li '.($controller === $controller_selected ? 'class="active"' : '').'>
 	<a href="#'.strtolower($controller).'" class="page-changer">'.ucfirst($controller).'</a>
 </li>';
 				}
 			}
-
-			$object = <<<HTML
-	<DOCTYPE html>
-	<html lang="fr">
-		<head>
-        	<meta name="viewport" content="width=device-width, initial-scale=1">
-			<meta charset="utf-8" />
-			<title>Documentation Pizzygo API</title>
-			<link rel="icon" href="/public/img/logo_pizzygo.png" />
-			<link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
-			<link rel="stylesheet" href="/public/libs/materialize/css/materialize.min.css" />
-			<script src="https://code.jquery.com/jquery-3.3.1.js"
-			          integrity="sha256-2Kok7MbOyxpgUVvAk/HJ2jigOSYS2auK4Pfzbm7uH60="
-					  crossorigin="anonymous"></script>
-			<script src="/public/libs/materialize/js/materialize.min.js"></script>
-			<link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/styles/ocean.min.css">
-			<script src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/highlight.min.js"></script>
-			<script>
-				$(window).ready(() => {
-				    let valid_form = (http_verb, class_data, url) => {
-				        let inputs = $('.' + class_data);
-				        let data = {};
-				        inputs.each((key, input) => {
-				            let field = $(input).attr('placeholder');
-				            data[field] = $(input).val();
-				        });
-				        data.debug = true;
-				        $.ajax({
-				        	beforeSend: () => {
-								$('#write_json_response' + class_data)
-								.append('<div class="col s4 offset-s4">' +
-								 	'<img id="loader_' + class_data + '" src="/public/img/loader.gif" alt="loading..." />' +
-								  '</div');
-							},
-				    		url: url,
-				    		method: http_verb,
-				    		data: data
-				        }).done((data, textStatus, response) => {
-				            $('#loader_' + class_data).remove();
-				            $('.http-code-write_json_response' + class_data).html(response.status).addClass('new badge green white-text');
-				            $('.write_json_response' + class_data).html(JSON.stringify(data, null, "  "));
-				            hljs.highlightBlock(document.querySelector('.write_json_response' + class_data));
-				        }).fail(response => {
-				            $('#loader_' + class_data).remove();
-				            let data = response.responseJSON;
-				            $('.http-code-write_json_response' + class_data).html(response.status).addClass('new badge red white-text');
-				            $('.write_json_response' + class_data).html(JSON.stringify(data, null, "  "));
-				            hljs.highlightBlock(document.querySelector('.write_json_response' + class_data));
-				        });
-				    };
-				    let resize_urls = () => {
-				         $('.api_url').css('max-width', $(document).width() + 50 + 'px').css('overflow', 'auto');
-				    };
-				    let init_change_page = () => {
-				        $('.sections .page').each((key, elem) => {
-				            let id = $(elem).attr('id');
-				            $(elem).css('display', 'none');
-				            let onglet = $('#controllers a[href="#' + id + '"]').parent();
-				            if (onglet.hasClass('active')) {
-				                $(elem).css('display', 'block');
-				            }
-				        })
-				    };
-				    let change_page = (parent) => {
-				        $('#controllers li').each((key, elem) => {
-				            $(elem).removeClass('active');
-				        });
-				        parent.addClass('active');
-				        init_change_page();
-				    };
-				    
-				    init_change_page();
-				    
-				    $('input[type=button]').on('click', elem => {
-				        valid_form($(elem.target).data('http_verb'), $(elem.target).data('class'), $(elem.target).data('url'));
-				    });
-				    
-				    $('a.page-changer').on('click', elem => {
-				        elem.preventDefault();
-				        change_page($(elem.target).parent());
-				    });
-				    
-				    resize_urls();
-				    $(window).resize(resize_urls);
-				    $('.sidenav').sidenav();
-				});
-			  </script>
-		</head>
-		<body>
-			<nav>
-				<div class="nav-wrapper orange">
-					<a href="#" data-target="controllers"  class="brand-logo sidenav-trigger show-on-medium-and-up show-on-medium-and-down" >
-						<img src="/public/img/logo_pizzygo.png" style="padding-left: 10px;height: 65px;" alt="logo" />
-					</a>
-            		<a href="#" data-target="menu-sidenav" class="sidenav-trigger">
-            			<i class="material-icons">menu</i>
-            		</a>
-					<ul id="nav-mobile" class="right hide-on-med-and-down">
-						<li class="active"><a href="/api/index.php/documentation/developer">Développeur</a></li>
-                		<li><a href="/api/index.php/documentation/user">Utilisateur</a></li>
-                		<li><a href="/api/index.php/documentation/disconnect">Déconnection</a></li>
-					</ul>
-					<ul class="sidenav" id="menu-sidenav">
-						<li class="active">
-							<a href="/api/index.php/documentation/developer">Développeur</a>
-						</li>
-						<li>
-							<a href="/api/index.php/documentation/user">Utilisateur</a>
-						</li>
-                		<li>
-                			<a href="/api/index.php/documentation/disconnect">Déconnection</a>
-                		</li>
-					</ul>
-					<ul class="sidenav" id="controllers">
-						{$sidenav_controllers}
-					</ul>
-				</div>
-			</nav>
-			<header>
-				<div class="container">
-					<div class="row">
-						<div class="col s12 center-align">
-							<h1 class="title" style="font-size: 45px;">
-								Documentation Pizzygo API
-							</h1>
-						</div>
-					</div>
-				</div>
-			</header>
-			<main>
-				<div class="container sections">
-					{$sections}
-				</div>
-			</main>
-		</body>
-	</html>
-HTML;
-			return $object;
+			$templating_service->set_path(__DIR__.'/../views/documentation');
+			return $templating_service->display('developer', [
+				'sections' => $sections,
+				'sidenav_controllers' => $sidenav_controllers
+			]);
 		}
 
 		public function get_connexion_content($error_message = null) {
@@ -551,15 +427,17 @@ HTML;
 			/** @var SessionService $session_service */
 			$session_service = $this->get_service('session');
 			$session_service->remove('doc_admin');
+			$session_service->remove('doc_page');
 			return !$session_service->has_key('doc_admin');
 		}
 
+		/**
+		 * @throws Exception
+		 */
 		public function get_user_doc_content() {
-			if(is_file(__DIR__.'/../views/documentation.html')) {
-				return file_get_contents(__DIR__.'/../views/documentation.html');
-			}
-			else {
-				return '<center><b>La vue documentation n\'existe pas</b></center>';
-			}
+			/** @var Micro_templatingService $templating_service */
+			$templating_service = $this->get_service('micro_templating');
+			$templating_service->set_path(__DIR__.'/../views/documentation');
+			return $templating_service->display('user');
 		}
 	}
