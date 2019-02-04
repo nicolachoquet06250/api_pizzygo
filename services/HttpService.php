@@ -35,7 +35,7 @@ class HttpService extends Service implements IHttpService {
 	 * @param null|string $key
 	 * @return array|null|string
 	 */
-	public function post($key) {
+	public function post($key = null) {
 		if(is_null($key)) {
 			return $this->post;
 		}
@@ -46,7 +46,7 @@ class HttpService extends Service implements IHttpService {
 	 * @param null|string $key
 	 * @return array|null|string
 	 */
-	public function files($key) {
+	public function files($key = null) {
 		if(is_null($key)) {
 			return $this->files;
 		}

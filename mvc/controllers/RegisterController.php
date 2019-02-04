@@ -6,6 +6,8 @@ class RegisterController extends Controller {
 
 	/**
 	 * @inheritdoc
+	 * @title REGISTER USER
+	 * @describe Enregistre un utilisateur et affiche l'utilisateur créé si il y a succes.
 	 * @param string $name
 	 * @param string $surname
 	 * @param string $email
@@ -16,9 +18,11 @@ class RegisterController extends Controller {
 	 * @param string $profil_img
 	 * @param string $pseudo
 	 * @param string $website
+	 * @param bool $premium
+	 * @param bool $active
 	 * @http_verb post
 	 * @alias_method register
-	 * @not_in_doc
+	 * @not_request
 	 * @throws Exception
 	 */
 	public function index(): JsonResponse {
@@ -38,19 +42,16 @@ class RegisterController extends Controller {
 	 * @param string $profil_img
 	 * @param string $pseudo
 	 * @param string $website
+	 * @param bool $premium
+	 * @param bool $active
 	 * @http_verb post
 	 * @return Response
 	 * @throws Exception
 	 */
 	public function register(): JsonResponse {
 		$infos = [];
-		foreach ($_POST as $key => $value) {
-			if($key === 'describe') {
-				$infos['description'] = $value;
-			}
-			else {
-				$infos[$key] = $value;
-			}
+		foreach ($this->post() as $key => $value) {
+			$infos[($key === 'describe' ? 'description' : $key)] = $value;
 		}
 		$user = $this->model->register_user($infos);
 		return $this->get_response($user);

@@ -52,7 +52,7 @@ abstract class Controller extends Base implements IController {
 	 * @param string $key
 	 * @return array|string|null
 	 */
-	protected function get($key) {
+	protected function get($key = null) {
 		return $this->http_service->get($key);
 	}
 
@@ -60,7 +60,7 @@ abstract class Controller extends Base implements IController {
 	 * @param string $key
 	 * @return array|string|null
 	 */
-	protected function post($key) {
+	protected function post($key = null) {
 		return $this->http_service->post($key);
 	}
 
@@ -68,7 +68,7 @@ abstract class Controller extends Base implements IController {
 	 * @param string $key
 	 * @return array|string|null
 	 */
-	protected function files($key) {
+	protected function files($key = null) {
 		return $this->http_service->files($key);
 	}
 

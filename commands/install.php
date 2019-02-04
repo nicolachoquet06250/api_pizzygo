@@ -433,14 +433,9 @@ class install extends cmd {
 	/**
 	 * @throws Exception
 	 */
-	public function dependencies(DependenciesConf $dependencies, OsService $os_service) {
+	public function dependencies(DependenciesConf $dependencies, GitService $git_service) {
 		foreach ($dependencies->get_all() as $dir => $dependency) {
-			if($os_service->IAmOnUnixSystem()) {
-				exec('git clone '.$dependency.' '.__DIR__.'/../'.$dir);
-			}
-			else {
-				exec('"c:\Program Files\Git\bin\git.exe" clone '.$dependency.' '.__DIR__.'/../'.$dir);
-			}
+			exec($git_service->git_path().' clone '.$dependency.' '.__DIR__.'/../'.$dir);
 		}
 	}
 }
