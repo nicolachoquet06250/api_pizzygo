@@ -39,4 +39,23 @@ class make extends cmd {
 		$queue_email_receiver = $this->queues_loader()->get_service_queue_receiver()->get_queue('email');
 		$queue_email_receiver->run();
 	}
+
+	/**
+	 * @param LoggerService $loggerService
+	 * @throws ReflectionException
+	 */
+	public function test(LoggerService $loggerService) {
+		$loggerService->add_constant('TEST', 4);
+		$loggerService->logger_callback('TEST', function ($message) {
+			var_dump($message);
+			var_dump('je suis dans mon logger ajouté');
+		}, function ($message) {
+			var_dump($message);
+			var_dump('j\'envoie dans mon logger ajouté');
+		});
+		$loggerService->add_loggers(LoggerService::CONSOLE, LoggerService::FILE, LoggerService::MAIL, 'TEST');
+		$loggerService->set_email_infos('Nicolas Choquet', 'nicolachoquet06250@gmail.com', 'Un objet');
+		$loggerService->log('coucou');
+		$loggerService->send();
+	}
 }
